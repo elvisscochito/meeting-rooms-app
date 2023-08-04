@@ -1,0 +1,13 @@
+dialog:modal {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: none;
+  border-radius: .5rem;
+  padding: 1rem;
+}
+
+dialog::backdrop {
+  backdrop-filter: blur(.3px);
+  background-color: hsla(0, 0%, 85%, 0.2);
+}
