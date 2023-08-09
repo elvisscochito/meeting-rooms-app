@@ -1,8 +1,24 @@
 import { meetingModel, roomModel } from "../models/rooms.model.js";
 
+/* get meetings by room */
+export const getMeetings = async (req, res) => {
+  try {
+    const room = await roomModel.findOne({ name: 'P102' }).populate("meetings");
+
+    if (!room) {
+      res.status(404).json({ error: "Room not found" });
+    }
+
+    res.status(200).json(room.meetings);
+
+  } catch (error) {
+    res.status(400).json({ error: "Error processing request", details: error.message });
+  }
+};
+
 export const postMeeting = async (req, res) => {
   try {
-    const room = await roomModel.findOne({ name: 'P101' });
+    const room = await roomModel.findOne({ name: 'P102' });
 
     if (!room) {
       res.status(404).json({ error: "Room not found" });
