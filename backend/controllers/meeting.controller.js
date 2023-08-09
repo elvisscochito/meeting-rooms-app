@@ -1,39 +1,42 @@
 import { meetingModel, roomModel } from "../models/rooms.model.js";
 
-/* get meetings by room */
 export const getMeetings = async (req, res) => {
   try {
-    const room = await roomModel.findOne({ name: 'P102' }).populate("meetings");
+    const room = await roomModel.findOne({ name: 'P101' });
 
     if (!room) {
-      res.status(404).json({ error: "Room not found" });
+      return res.status(404).json({ message: "Room not found" });
     }
 
-    res.status(200).json(room.meetings);
+    /** @note get meetings and their room, both without __v field */
 
-  } catch (error) {
-    res.status(400).json({ error: "Error processing request", details: error.message });
+    const meetings = await meetingModel.find({ room: room._id }, { __v: 0 }).populate('room', { __v: 0 });
+
+    res.status(200).json(meetings);
   }
-};
+  catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+}
 
 export const postMeeting = async (req, res) => {
   try {
-    const room = await roomModel.findOne({ name: 'P102' });
+    const room = await roomModel.findOne({ name: 'P101' });
 
     if (!room) {
-      res.status(404).json({ error: "Room not found" });
+      return res.status(404).json({ message: "Room not found" });
     }
 
-    const meeting = await meetingModel.create({ title: req.body.title });
+    const newMeeting = await meetingModel.create({
+      title: req.body.title,
+      room: room._id
+    });
 
-    await meeting.save();
+    await newMeeting.save();
 
-    room.meetings.push(meeting);
-    await room.save();
-
-    res.status(201).json(room);
-
-  } catch (error) {
-    res.status(400).json({ error: "Error processing request", details: error.message });
+    res.status(201).json(newMeeting);
   }
-};
+  catch (error) {
+    res.status(409).json({ message: error.message });
+  }
+}
