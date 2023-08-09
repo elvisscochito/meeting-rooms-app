@@ -6,7 +6,7 @@ const meetingSchema = new mongoose.Schema({
 
 const roomsSchema = new mongoose.Schema({
   name: String,
-  meetings: [{ type: mongoose.Schema.Types.ObjectId, ref: "Meeting" }]
+  meetings: [meetingSchema]
 });
 
 const roomModel = mongoose.model("Room", roomsSchema);
