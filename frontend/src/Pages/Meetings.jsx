@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Modal from "../components/Modal";
 import styles from "../styles/Meetings.module.css";
@@ -7,6 +7,7 @@ function Meetings() {
   const [meetings, setMeetings] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const dialog = useRef(null);
   const { room } = useParams();
   const navigate = useNavigate();
@@ -14,13 +15,13 @@ function Meetings() {
   useLayoutEffect(() => {
     const fetchRooms = async () => {
       try {
-        const response = await fetch("http://localhost:3000/rooms");
+        const response = await fetch("http://localhost:3000/room");
         const rooms = await response.json();
         console.log(rooms);
         setRooms(rooms);
-      }
-      catch (error) {
-        console.error(error);
+      } catch (error) {
+        console.error("fetchRooms: ", error);
+        setError(error.message);
       }
     }
 
@@ -30,9 +31,9 @@ function Meetings() {
         const meetings = await response.json();
         console.log(meetings);
         setMeetings(meetings);
-      }
-      catch (error) {
-        console.error(error);
+      } catch (error) {
+        console.error("fetchMeetings: ", error);
+        setError(error.message);
       }
     }
 
@@ -41,7 +42,7 @@ function Meetings() {
         setIsLoading(false);
         results.forEach((result) => {
           if (result.status === 'rejected') {
-            console.error(result.reason);
+            console.error("allSettled", result.reason);
           }
         });
       })
@@ -51,6 +52,12 @@ function Meetings() {
       });
 
   }, [room]);
+
+  useEffect(() => {
+    if (error) {
+      setIsLoading(false);
+    }
+  }, [error]);
 
   const openModal = () => {
     dialog.current.showModal();
