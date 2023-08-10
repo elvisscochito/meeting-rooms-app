@@ -7,7 +7,8 @@ function Meetings() {
   const [meetings, setMeetings] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [errorRooms, setErrorRooms] = useState(null);
+  const [errorMeetings, setErrorMeetings] = useState(null);
   const dialog = useRef(null);
   const { room } = useParams();
   const navigate = useNavigate();
@@ -15,13 +16,13 @@ function Meetings() {
   useLayoutEffect(() => {
     const fetchRooms = async () => {
       try {
-        const response = await fetch("http://localhost:3000/room");
+        const response = await fetch("http://localhost:3000/rooms");
         const rooms = await response.json();
         console.log(rooms);
         setRooms(rooms);
       } catch (error) {
-        console.error("fetchRooms: ", error);
-        setError(error.message);
+        setErrorRooms("Error cargando salas");
+        throw error;
       }
     }
 
@@ -32,8 +33,8 @@ function Meetings() {
         console.log(meetings);
         setMeetings(meetings);
       } catch (error) {
-        console.error("fetchMeetings: ", error);
-        setError(error.message);
+        setErrorMeetings("Error cargando reuniones");
+        throw error;
       }
     }
 
@@ -42,7 +43,7 @@ function Meetings() {
         setIsLoading(false);
         results.forEach((result) => {
           if (result.status === 'rejected') {
-            console.error("allSettled", result.reason);
+            console.error(result.reason);
           }
         });
       })
@@ -54,10 +55,10 @@ function Meetings() {
   }, [room]);
 
   useEffect(() => {
-    if (error) {
+    if (errorRooms) {
       setIsLoading(false);
     }
-  }, [error]);
+  }, [errorRooms]);
 
   const openModal = () => {
     dialog.current.showModal();
@@ -93,54 +94,65 @@ function Meetings() {
         {
           isLoading ? (
             <span>Loading...</span>
-          ) : (
+          ) : /* !error && */ (
             <>
-              <div className={styles.roomSwitcher}>
-                {
-                  rooms.map((rooms) => (
-                    <button
-                      className={styles.room}
-                      key={rooms._id}
-                      onClick={() => handleRoomChange(rooms.name)}
-                      style={buttonStyles(rooms.name === room)}
-                    /* disabled={rooms.id === currentActiveTab} */
-                    >
-                      {rooms.name}
-                    </button>
-                  ))
-                }
-              </div>
-
-              <div className={styles.meetings}>
-                {meetings.length === 0 && !isLoading ? (
-                  <span>
-                    No meetings upcoming
-                    {/* Sin reuniones programadas */}
-                  </span>
+              {
+                errorRooms ? (
+                  <span>{errorRooms}</span>
                 ) : (
-                  meetings.map((meeting) => (
-                    <div
-                      className={styles.card}
-                      key={meeting._id}
-                      style={{ borderLeftColor: meeting.active ? "#00743B" : "#e6e6e6" }}
-                    >
-                      <header>
-                        <h3>{meeting.title}</h3>
-                        <h4>{meeting.description}</h4>
-                      </header>
-                      <footer className={styles.cardFooter}>
-                        <span>{meeting.time}</span>
-                        <span>{meeting.host}</span>
-                      </footer>
-                    </div>
-                  ))
+                  <div className={styles.roomSwitcher}>
+                    {
+                      rooms.map((rooms) => (
+                        <button
+                          className={styles.room}
+                          key={rooms._id}
+                          onClick={() => handleRoomChange(rooms.name)}
+                          style={buttonStyles(rooms.name === room)}
+                        /* disabled={rooms.id === currentActiveTab} */
+                        >
+                          {rooms.name}
+                        </button>
+                      ))
+                    }
+                  </div>
                 )
-                }
-              </div>
+              }
+
+              {
+                errorMeetings ? (
+                  <span>{errorMeetings}</span>
+                ) : (
+                  <div className={styles.meetings}>
+                    {meetings.length === 0 && !isLoading ? (
+                      <span>
+                        No meetings upcoming
+                        {/* Sin reuniones programadas */}
+                      </span>
+                    ) : (
+                      meetings.map((meeting) => (
+                        <div
+                          className={styles.card}
+                          key={meeting._id}
+                          style={{ borderLeftColor: meeting.active ? "#00743B" : "#e6e6e6" }}
+                        >
+                          <header>
+                            <h3>{meeting.title}</h3>
+                            <h4>{meeting.description}</h4>
+                          </header>
+                          <footer className={styles.cardFooter}>
+                            <span>{meeting.time}</span>
+                            <span>{meeting.host}</span>
+                          </footer>
+                        </div>
+                      ))
+                    )
+                    }
+                  </div>
+                )
+              }
             </>
           )
         }
-
       </div>
       <footer className={styles.footer}>
         <dialog ref={dialog}>
