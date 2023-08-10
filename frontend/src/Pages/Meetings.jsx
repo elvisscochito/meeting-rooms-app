@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Modal from "../components/Modal";
 import styles from "../styles/Meetings.module.css";
@@ -11,7 +11,7 @@ function Meetings() {
   const { room } = useParams();
   const navigate = useNavigate();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const fetchRooms = async () => {
       try {
         const response = await fetch("http://localhost:3000/rooms");
@@ -36,12 +36,20 @@ function Meetings() {
       }
     }
 
-    Promise.all([fetchRooms(), fetchMeetings()])
-      .then(() => setIsLoading(false))
+    Promise.allSettled([fetchRooms(), fetchMeetings()])
+      .then((results) => {
+        setIsLoading(false);
+        results.forEach((result) => {
+          if (result.status === 'rejected') {
+            console.error(result.reason);
+          }
+        });
+      })
       .catch((error) => {
-        console.error(error)
+        console.error(error);
         setIsLoading(false);
       });
+
   }, [room]);
 
   const openModal = () => {
