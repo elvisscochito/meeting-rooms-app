@@ -1,50 +1,48 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import Modal from "../components/Modal";
 import styles from "../styles/Meetings.module.css";
 
 function Meetings() {
-  const [rooms, setRooms] = useState([
-    {
-      id: 1,
-      name: "P101",
-      meetings: [
-        {
-          id: 1,
-          title: "Today's work",
-          description: "Let's talk about today's work",
-          date: "August 1st, 2021",
-          time: "10am - 12pm (2hrs)",
-          host: "Apaez",
-          active: true
-        },
-        {
-          id: 2,
-          title: "Client's needs",
-          description: "What client are looking for?",
-          date: "August 2nd, 2021",
-          time: "1pm - 3pm (2hrs)",
-          host: "Apaez",
-          active: false
-        },
-        {
-          id: 3,
-          title: "Review today's work",
-          description: "Review today's work",
-          date: "August 3rd, 2021",
-          time: "4pm - 6pm (2hrs)",
-          host: "Apaez",
-          active: false
-        },
-      ]
-    },
-    {
-      id: 2,
-      name: "P102",
-      meetings: []
-    }
-  ]);
-  const [currentActiveTab, setCurrentActiveTab] = useState(rooms[0].name);
+  const [meetings, setMeetings] = useState([]);
+  const [rooms, setRooms] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const dialog = useRef(null);
+  const { room } = useParams();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        const response = await fetch("http://localhost:3000/rooms");
+        const rooms = await response.json();
+        console.log(rooms);
+        setRooms(rooms);
+      }
+      catch (error) {
+        console.error(error);
+      }
+    }
+
+    const fetchMeetings = async () => {
+      try {
+        const response = await fetch(`http://localhost:3000/meetings/${room}`);
+        const meetings = await response.json();
+        console.log(meetings);
+        setMeetings(meetings);
+      }
+      catch (error) {
+        console.error(error);
+      }
+    }
+
+    Promise.all([fetchRooms(), fetchMeetings()])
+      .then(() => setIsLoading(false))
+      .catch((error) => {
+        console.error(error)
+        setIsLoading(false);
+      });
+  }, [room]);
 
   const openModal = () => {
     dialog.current.showModal();
@@ -53,9 +51,9 @@ function Meetings() {
     dialog.current.close();
   }
 
-  /* const handleActiveTab = (id) => {
-    setCurrentActiveTab(id);
-  } */
+  const handleRoomChange = (room) => {
+    navigate(`/meetings/${room}`, { replace: true });
+  }
 
   /** @note conditional styles (made const instead inline styles to avoid verbose code) */
   const buttonStyles = (isActive) => {
@@ -77,36 +75,38 @@ function Meetings() {
       <div className={styles.content}>
         <h2>August 1st, 2021</h2>
 
-        <div className={styles.roomSwitcher}>
-          {
-            rooms.map((rooms) => (
-              <button
-                className={styles.room}
-                key={rooms.id}
-                onClick={() => setCurrentActiveTab(rooms.name)}
-                style={buttonStyles(rooms.name === currentActiveTab)}
-              /* disabled={rooms.id === currentActiveTab} */
-              >
-                {rooms.name}
-              </button>
-            ))
-          }
-        </div>
-
-        <div className={styles.meetings}>
-          {rooms.map((room) => (
+        {
+          isLoading ? (
+            <span>Loading...</span>
+          ) : (
             <>
-              {room.name === currentActiveTab && (
-                room.meetings.length === 0 ? (
+              <div className={styles.roomSwitcher}>
+                {
+                  rooms.map((rooms) => (
+                    <button
+                      className={styles.room}
+                      key={rooms._id}
+                      onClick={() => handleRoomChange(rooms.name)}
+                      style={buttonStyles(rooms.name === room)}
+                    /* disabled={rooms.id === currentActiveTab} */
+                    >
+                      {rooms.name}
+                    </button>
+                  ))
+                }
+              </div>
+
+              <div className={styles.meetings}>
+                {meetings.length === 0 && !isLoading ? (
                   <span>
                     No meetings upcoming
                     {/* Sin reuniones programadas */}
                   </span>
                 ) : (
-                  room.meetings.map((meeting) => (
+                  meetings.map((meeting) => (
                     <div
                       className={styles.card}
-                      key={meeting.id}
+                      key={meeting._id}
                       style={{ borderLeftColor: meeting.active ? "#00743B" : "#e6e6e6" }}
                     >
                       <header>
@@ -120,10 +120,11 @@ function Meetings() {
                     </div>
                   ))
                 )
-              )}
+                }
+              </div>
             </>
-          ))}
-        </div>
+          )
+        }
 
       </div>
       <footer className={styles.footer}>

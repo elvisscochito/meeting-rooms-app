@@ -1,3 +1,4 @@
+import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import morgan from "morgan";
@@ -6,6 +7,7 @@ import meetingRoutes from "./routes/meeting.js";
 import roomRoutes from "./routes/room.js";
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
 dotenv.config();
