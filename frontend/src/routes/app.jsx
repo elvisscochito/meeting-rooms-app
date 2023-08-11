@@ -5,7 +5,7 @@ function Router() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/meetings/:room" element={<Meetings />} />
+        <Route path="/:room/meetings" element={<Meetings />} />
       </Routes>
     </BrowserRouter>
   )

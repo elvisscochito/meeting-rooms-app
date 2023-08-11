@@ -21,7 +21,7 @@ export const getMeetings = async (req, res) => {
 
 export const postMeeting = async (req, res) => {
   try {
-    const room = await roomModel.findOne({ name: 'P101' });
+    const room = await roomModel.findOne({ name: req.params.room });
 
     if (!room) {
       return res.status(404).json({ message: "Room not found" });

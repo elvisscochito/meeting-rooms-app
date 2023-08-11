@@ -103,3 +103,7 @@ button.button {
   background-color: var(--brand-color);
   /* transition: all 0.2s ease-in-out; */
 }
+
+button.button:disabled {
+  background-color: hsla(151, 100%, 23%, 0.5);
+}

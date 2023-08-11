@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import Modal from "../components/Modal";
+import ModalNewMeeting from "../components/ModalNewMeeting";
 import styles from "../styles/Meetings.module.css";
 
 function Meetings() {
@@ -12,6 +12,9 @@ function Meetings() {
   const dialog = useRef(null);
   const { room } = useParams();
   const navigate = useNavigate();
+
+  /**
+   * TODO DEJAR LAS SALAS y no cargar reuniones  */
 
   useLayoutEffect(() => {
     const fetchRooms = async () => {
@@ -28,7 +31,7 @@ function Meetings() {
 
     const fetchMeetings = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/meetings/${room}`);
+        const response = await fetch(`http://localhost:3000/${room}/meetings`);
         const meetings = await response.json();
         console.log(meetings);
         setMeetings(meetings);
@@ -68,7 +71,7 @@ function Meetings() {
   }
 
   const handleRoomChange = (room) => {
-    navigate(`/meetings/${room}`, { replace: true });
+    navigate(`/${room}/meetings`, { replace: true });
   }
 
   /** @note conditional styles (made const instead inline styles to avoid verbose code) */
@@ -156,9 +159,9 @@ function Meetings() {
       </div>
       <footer className={styles.footer}>
         <dialog ref={dialog}>
-          <Modal close={closeModal} />
+          <ModalNewMeeting close={closeModal} />
         </dialog>
-        <button className={styles.button} onClick={openModal}>Nueva reuni&oacute;n</button>
+        <button className={styles.button} onClick={openModal} disabled={isLoading}>Nueva reuni&oacute;n</button>
       </footer>
     </>
   );
