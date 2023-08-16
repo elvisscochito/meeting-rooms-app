@@ -68,33 +68,6 @@ const ModalNewMeeting = ({ room, close }) => {
 
         console.log("parsedDate", parsedDate);
 
-        /* const optionsDate = {
-         year: "numeric",
-         month: "2-digit",
-         day: "2-digit"
-       };
-       const optionsTime = {
-         hour: "2-digit",
-         minute: "2-digit"
-       };
-
-       const formattedLocalDate = parsedDate.toLocaleDateString("es-ES", optionsDate);
-       const [day, month, year] = formattedLocalDate.split("/");
-       const isoFormattedDate = `${year}-${month}-${day}`;
-
-       const formattedLocalStartTime = parsedDate.toLocaleTimeString("es-ES", optionsTime);
-
-       const startDate = new Date(`${isoFormattedDate}T${formattedLocalStartTime}`);
-
-       const endDate = new Date(startDate);
-       endDate.setHours(endDate.getHours() + 1);
-
-       const formattedLocalEndTime = endDate.toLocaleTimeString("es-ES", optionsTime);
-
-       setDate(isoFormattedDate);
-       setStartTime(formattedLocalStartTime);
-       setEndTime(formattedLocalEndTime); */
-
       } catch (error) {
         console.error(error);
       }
