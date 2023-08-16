@@ -1,24 +1,16 @@
 button.button {
   display: inline-block;
   border: none;
-  border-radius: 0.5rem;
+  border-radius: .3rem;
   padding: 0.5rem 1rem;
-  width: 75%;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #fff;
-  background-color: var(--brand-color);
-  /* transition: all 0.2s ease-in-out; */
+  /*transition: all 0.2s ease-in-out;
+  */
 }
-button.button {
-  display: inline-block;
-  border: none;
-  border-radius: 0.5rem;
-  padding: 0.5rem 1rem;
-  width: 75%;
+
+button.default {
+  background-color: var(--brand-color);
+  color: #fff;
   font-size: 1rem;
   font-weight: 600;
-  color: #fff;
-  background-color: var(--brand-color);
   /* transition: all 0.2s ease-in-out; */
 }

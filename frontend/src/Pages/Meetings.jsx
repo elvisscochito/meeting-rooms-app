@@ -9,6 +9,7 @@ function Meetings() {
   const [isLoading, setIsLoading] = useState(true);
   const [errorRooms, setErrorRooms] = useState(null);
   const [errorMeetings, setErrorMeetings] = useState(null);
+  const [datetime, setDatetime] = useState(null);
   const dialog = useRef(null);
   const { room } = useParams();
   const navigate = useNavigate();
@@ -63,6 +64,33 @@ function Meetings() {
     }
   }, [errorRooms]);
 
+  useEffect(() => {
+    const fetchDateTime = async () => {
+      try {
+        const response = await fetch("http://localhost:3000/datetime");
+        const isoDateString = await response.text();
+
+        /** @note parse isoDateString to a date object */
+        const parsedDate = new Date(isoDateString);
+
+        /** @note format date */
+        const options = {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric"
+        };
+        const formattedLocalDate = parsedDate.toLocaleDateString("es-ES", options);
+
+        setDatetime(formattedLocalDate);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchDateTime();
+  }, []);
+
   const openModal = () => {
     dialog.current.showModal();
   }
@@ -92,7 +120,7 @@ function Meetings() {
         <h1>&larr;Reuniones</h1>
       </header>
       <div className={styles.content}>
-        <h2>August 1st, 2021</h2>
+        <h2 className={styles.date}>{datetime}</h2>
 
         {
           isLoading ? (
@@ -143,7 +171,9 @@ function Meetings() {
                             <h4>{meeting.description}</h4>
                           </header>
                           <footer className={styles.cardFooter}>
-                            <span>{meeting.time}</span>
+                            <span>{new Date(meeting.start).toLocaleTimeString()}</span>
+                            <span>{new Date(meeting.end).toLocaleTimeString()}</span>
+                            {/* calcula y muestra la duración de la reunión teniendo en cuenta la hora de comiezno y la hora de final */}
                             <span>{meeting.host}</span>
                           </footer>
                         </div>
@@ -159,7 +189,7 @@ function Meetings() {
       </div>
       <footer className={styles.footer}>
         <dialog ref={dialog}>
-          <ModalNewMeeting close={closeModal} />
+          <ModalNewMeeting room={room} close={closeModal} />
         </dialog>
         <button className={styles.button} onClick={openModal} disabled={isLoading}>Nueva reuni&oacute;n</button>
       </footer>

@@ -27,6 +27,10 @@ div.content h2 {
   font-weight: 550;
 }
 
+div.content h2::first-letter {
+  text-transform: uppercase;
+}
+
 div.roomSwitcher {
   display: flex;
   flex-direction: row;

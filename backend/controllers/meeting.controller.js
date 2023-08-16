@@ -1,4 +1,4 @@
-import { meetingModel, roomModel } from "../models/rooms.model.js";
+import { meetingModel, roomModel } from "../models/models.js";
 
 export const getMeetings = async (req, res) => {
   try {
@@ -29,6 +29,10 @@ export const postMeeting = async (req, res) => {
 
     const newMeeting = await meetingModel.create({
       title: req.body.title,
+      description: req.body.description,
+      start: req.body.start,
+      end: req.body.end,
+      host: req.body.host,
       room: room._id
     });
 
