@@ -1,3 +1,9 @@
+div.grid {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100vh;
+}
+
 header.header {
   display: flex;
   flex-direction: row;
@@ -17,14 +23,17 @@ header.header div {
 div.content {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   padding: 1rem;
   gap: 1rem;
+  overflow: hidden;
 }
 
-div.content h2 {
+div.content h2.date {
   font-weight: 550;
+  /* max-inline-size: 20ch;
+  text-align: center; */
 }
 
 div.content h2::first-letter {
@@ -52,13 +61,40 @@ button.room {
   transition: all 0.2s ease-in-out;
 }
 
+div.meetingsWrapper {
+  /* Fill available space */
+  width: 100%;
+  height: 100%;
+  /* Enable scrolling */
+  overflow-y: auto;
+  position: relative;
+}
+
 div.meetings {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   width: 100%;
+  /* height: 100%; */
   gap: 1rem;
+}
+
+span.noMeetingsMessage {
+  position: absolute;
+  /* Set the position to absolute */
+  top: 50%;
+  /* Move the top edge to the middle */
+  left: 50%;
+  /* Move the left edge to the middle */
+  transform: translate(-50%, -50%);
+  /* Center the message */
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 600;
+  color: #717179;
+  width: 100%;
+  max-inline-size: 15ch;
 }
 
 div.card {
@@ -92,7 +128,7 @@ footer.footer {
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  padding: 1rem;
+  padding: 1.5rem;
 }
 
 button.button {

@@ -35,7 +35,9 @@ label.label {
   font-size: 1.3rem;
 }
 
-input.input {
+input.input,
+input[type="date"].date,
+input[type="time"].time {
   width: 100%;
   padding: .5rem;
   border: 1px solid #e4e4e7;
@@ -64,6 +66,28 @@ textarea.textarea {
   font-family: inherit;
 }
 
+span.duration {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #a1a1aa;
+}
+
+span.error {
+  color: #ff0000;
+  font-size: 1rem;
+  font-weight: 500;
+  width: 20ch;
+}
+
+footer.footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1rem;
+  margin-top: .5rem;
+  width: 100%;
+}
+
 button.button {
   display: inline-block;
   border: none;
@@ -84,15 +108,6 @@ button.default {
 button.variant {
   background-color: rgba(217, 217, 217, 0.75);
   /* transition: all 0.2s ease-in-out; */
-}
-
-footer.footer {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 1rem;
-  width: 100%;
 }
 
 /* button.button:disabled {

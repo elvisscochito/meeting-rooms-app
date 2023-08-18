@@ -4,70 +4,74 @@ import styles from '../styles/Modal.module.css';
 const ModalNewMeeting = ({ room, close }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  /* const [datetime, setDatetime] = useState(null); */
   const [date, setDate] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
+  const [duration, setDuration] = useState({
+    hours: 0,
+    minutes: 0
+  });
+  const [minTimeValue, setMinTimeValue] = useState('08:00');
+  const [maxTimeValue, setMaxTimeValue] = useState('20:00');
+  const [minDateValue, setMinDateValue] = useState('');
+  const [maxDateValue, setMaxDateValue] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+
   /**
    * TODO: host debe ser un usuario registrado
    */
   const [host, setHost] = useState('');
   /* const [isButtonDisabled, setIsButtonDisabled] = useState(true); */
-  const handleClose = () => {
-    setTitle('');
-    setDescription('');
-    setHost('');
-    close();
-  }
-
-  /* useEffect(() => {
-    if (title && host) {
-      setIsButtonDisabled(false);
-    } else {
-      setIsButtonDisabled(true);
-    }
-  }, [title, host]); */
 
   useEffect(() => {
     const fetchDateTime = async () => {
       try {
         const response = await fetch("http://localhost:3000/datetime");
         const date = await response.text();
-        console.log("date: ", date);
 
         /** @note parse date to a date object */
         const parsedDate = new Date(date);
-        /* const dateForStartTime = new Date(date);
-        const dateForEndTime = new Date(dateForStartTime); */
 
-        console.log("parsedDate", parsedDate)
-        const localDate = parsedDate.toLocaleDateString("es-ES", {
+        const dateOptions = {
           year: "numeric",
           month: "2-digit",
           day: "2-digit"
-        });
+        };
+
+        const timeOptions = {
+          hour: "2-digit",
+          minute: "2-digit"
+        };
+
+        const localDate = parsedDate.toLocaleDateString("es-ES", dateOptions);
 
         const [day, month, year] = localDate.split("/");
         const inputDate = `${year}-${month}-${day}`;
-        console.log("inputDate", inputDate);
+
+        parsedDate.setHours(parsedDate.getHours() + 1);
+        const startTime = parsedDate.toLocaleTimeString("es-ES", timeOptions);
+
+        parsedDate.setHours(parsedDate.getHours() + 1);
+        const endTime = parsedDate.toLocaleTimeString("es-ES", timeOptions);
+
+        /** @note MAX-DATE START */
+
+        const maxDate = new Date(inputDate);
+        maxDate.setDate(maxDate.getDate() + 7);
+
+        /** @note set the whole next week until saturday */
+        maxDate.setDate(maxDate.getDate() + (6 - maxDate.getDay()));
+
+        const [maxDay, maxMonth, maxYear] = maxDate.toLocaleDateString("es-ES", dateOptions).split("/");
+        const maxInputDate = `${maxYear}-${maxMonth}-${maxDay}`;
+
+        /** @note MAX-DATE END */
+
         setDate(inputDate);
-
-        parsedDate.setHours(parsedDate.getHours() + 1);
-        console.log(parsedDate)
-
-        const startTime = parsedDate.toLocaleTimeString("es-ES");
-        console.log("start", startTime);
+        setMinDateValue(inputDate);
+        setMaxDateValue(maxInputDate);
         setStartTime(startTime);
-
-        parsedDate.setHours(parsedDate.getHours() + 1);
-        console.log("parsedDate", parsedDate);
-
-        const endTime = parsedDate.toLocaleTimeString("es-ES");
-        console.log("endTime", endTime);
         setEndTime(endTime);
-
-        console.log("parsedDate", parsedDate);
-
       } catch (error) {
         console.error(error);
       }
@@ -76,10 +80,30 @@ const ModalNewMeeting = ({ room, close }) => {
     fetchDateTime();
   }, []);
 
+  const validateDate = (inputDate) => {
+    const selectedDate = new Date(inputDate);
+
+    const dayOfWeek = selectedDate.getDay();
+
+    return dayOfWeek < 6;
+  }
+
+  const handleDateChange = (e) => {
+    const newDate = e.target.value;
+
+    if (validateDate(newDate)) {
+      setDate(newDate);
+      setErrorMessage('');
+    } else {
+      setDate('');
+      setErrorMessage('Selecciona un día de lunes a sábado');
+    }
+  }
+
   const handleCreateMeeting = async () => {
     try {
-      const isoStartTime = new Date(`${date}T${startTime}`).toISOString();
-      const isoEndTime = new Date(`${date}T${endTime}`).toISOString();
+      const start = new Date(`${date}T${startTime}`).toISOString();
+      const end = new Date(`${date}T${endTime}`).toISOString();
       const response = await fetch(`http://localhost:3000/${room}/meeting`, {
         method: 'POST',
         headers: {
@@ -88,8 +112,8 @@ const ModalNewMeeting = ({ room, close }) => {
         body: JSON.stringify({
           title,
           description,
-          start: isoStartTime,
-          end: isoEndTime,
+          start,
+          end,
           host
         })
       })
@@ -101,20 +125,39 @@ const ModalNewMeeting = ({ room, close }) => {
     }
   }
 
-  const calculateDuration = () => {
-    const start = new Date(`${date}T${startTime}`);
-    const end = new Date(`${date}T${endTime}`);
+  useEffect(() => {
+    const calculateDuration = () => {
+      const start = new Date(`${date}T${startTime}`);
+      const end = new Date(`${date}T${endTime}`);
 
-    const durationInMillis = end - start;
-    const durationInMinutes = Math.floor(durationInMillis / (1000 * 60));
+      const durationInMillis = end - start;
+      const durationInMinutes = Math.floor(durationInMillis / (1000 * 60));
 
-    const hours = Math.floor(durationInMinutes / 60);
-    const minutes = durationInMinutes % 60;
+      const hours = Math.floor(durationInMinutes / 60);
+      const minutes = durationInMinutes % 60;
 
-    return { hours, minutes };
-  };
+      setDuration({
+        hours,
+        minutes
+      });
+    };
+    calculateDuration();
+  }, [startTime, endTime]);
 
-  const duration = calculateDuration();
+  /* useEffect(() => {
+    if (title && host) {
+      setIsButtonDisabled(false);
+    } else {
+      setIsButtonDisabled(true);
+    }
+  }, [title, host]); */
+
+  const handleClose = () => {
+    setTitle('');
+    setDescription('');
+    setHost('');
+    close();
+  }
 
   return (
     <>
@@ -138,22 +181,27 @@ const ModalNewMeeting = ({ room, close }) => {
         </fieldset>
 
         <fieldset className={styles.fieldset}>
-          <label htmlFor="date">Día</label>
-          <input type="date" id="date" value={date} onChange={(e) => setDate(e.target.value)} required />
+          <label className={styles.label} htmlFor="date">Day</label>
+          <input type="date" className={styles.date} id="date" value={date} min={minDateValue} max={maxDateValue} onChange={handleDateChange} required />
+          {
+            errorMessage && (
+              <span className={styles.error}>{errorMessage}</span>
+            )
+          }
         </fieldset>
 
         <fieldset className={styles.fieldset}>
-          <label htmlFor="startTime">Start time</label>
-          <input type="time" id="startTime" value={startTime} onChange={(e) => setStartTime(e.target.value)} required />
+          <label className={styles.label} htmlFor="startTime">Start time</label>
+          <input type="time" className={styles.time} id="startTime" value={startTime} min={minTimeValue} max={maxTimeValue} step="1800" onChange={(e) => setStartTime(e.target.value)} required />
         </fieldset>
 
         <fieldset className={styles.fieldset}>
-          <label htmlFor="endTime">End time</label>
-          <input type="time" id="endTime" value={endTime} onChange={(e) => setEndTime(e.target.value)} required />
+          <label className={styles.label} htmlFor="endTime">End time</label>
+          <input type="time" className={styles.time} id="endTime" value={endTime} min={minTimeValue} max={maxTimeValue} step="1800" onChange={(e) => setEndTime(e.target.value)} required />
         </fieldset>
 
-        <span>
-          Duration:
+        <span className={styles.duration}>
+          Duration:&nbsp;
           {
             duration.hours === 0 ? '' : duration.hours === 1 ? `${duration.hours} hr` : `${duration.hours} hrs`
           }

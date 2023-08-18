@@ -115,7 +115,7 @@ function Meetings() {
   } */
 
   return (
-    <>
+    <div className={styles.grid}>
       <header className={styles.header}>
         <h1>&larr;Reuniones</h1>
       </header>
@@ -153,33 +153,35 @@ function Meetings() {
                 errorMeetings ? (
                   <span>{errorMeetings}</span>
                 ) : (
-                  <div className={styles.meetings}>
-                    {meetings.length === 0 && !isLoading ? (
-                      <span>
-                        No meetings upcoming
-                        {/* Sin reuniones programadas */}
-                      </span>
-                    ) : (
-                      meetings.map((meeting) => (
-                        <div
-                          className={styles.card}
-                          key={meeting._id}
-                          style={{ borderLeftColor: meeting.active ? "#00743B" : "#e6e6e6" }}
-                        >
-                          <header>
-                            <h3>{meeting.title}</h3>
-                            <h4>{meeting.description}</h4>
-                          </header>
-                          <footer className={styles.cardFooter}>
-                            <span>{new Date(meeting.start).toLocaleTimeString()}</span>
-                            <span>{new Date(meeting.end).toLocaleTimeString()}</span>
-                            {/* calcula y muestra la duración de la reunión teniendo en cuenta la hora de comiezno y la hora de final */}
-                            <span>{meeting.host}</span>
-                          </footer>
-                        </div>
-                      ))
-                    )
-                    }
+                  <div className={styles.meetingsWrapper}>
+                    <div className={styles.meetings}>
+                      {meetings.length === 0 && !isLoading ? (
+                        <span className={styles.noMeetingsMessage}>
+                          No meetings upcoming
+                          {/* Sin reuniones programadas */}
+                        </span>
+                      ) : (
+                        meetings.map((meeting) => (
+                          <div
+                            className={styles.card}
+                            key={meeting._id}
+                            style={{ borderLeftColor: meeting.active ? "#00743B" : "#e6e6e6" }}
+                          >
+                            <header>
+                              <h3>{meeting.title}</h3>
+                              <h4>{meeting.description}</h4>
+                            </header>
+                            <footer className={styles.cardFooter}>
+                              <span>{new Date(meeting.start).toLocaleTimeString()}</span>
+                              <span>{new Date(meeting.end).toLocaleTimeString()}</span>
+                              {/* calcula y muestra la duración de la reunión teniendo en cuenta la hora de comiezno y la hora de final */}
+                              <span>{meeting.host}</span>
+                            </footer>
+                          </div>
+                        ))
+                      )
+                      }
+                    </div>
                   </div>
                 )
               }
@@ -193,7 +195,7 @@ function Meetings() {
         </dialog>
         <button className={styles.button} onClick={openModal} disabled={isLoading}>Nueva reuni&oacute;n</button>
       </footer>
-    </>
+    </div>
   );
 }
 
