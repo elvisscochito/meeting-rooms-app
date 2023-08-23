@@ -19,7 +19,7 @@ export const getMeetings = async (req, res) => {
   }
 }
 
-export const postMeeting = async (req, res) => {
+export const checkMeetingOverlap = async (req, res) => {
   try {
     const room = await roomModel.findOne({ name: req.params.room });
 
@@ -27,8 +27,8 @@ export const postMeeting = async (req, res) => {
       return res.status(404).json({ message: "Room not found" });
     }
 
-    const start = new Date(req.body.start);
-    const end = new Date(req.body.end);
+    const start = new Date(req.query.start);
+    const end = new Date(req.query.end);
 
     /**
      *  @note check if any meeting overload schedule
@@ -46,8 +46,26 @@ export const postMeeting = async (req, res) => {
       ]
     });
 
-    if (overlappingMeetings.length > 0) {
+    /* if (overlappingMeetings.length > 0) {
       return res.status(409).json({ message: "Meeting overlaps with another meeting" });
+    } */
+
+    const overlap = overlappingMeetings.length > 0;
+
+    res.status(200).json({ overlap });
+    /* res.status(200).json(overlappingMeetings); */
+  }
+  catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+}
+
+export const postMeeting = async (req, res) => {
+  try {
+    const room = await roomModel.findOne({ name: req.params.room });
+
+    if (!room) {
+      return res.status(404).json({ message: "Room not found" });
     }
 
     const newMeeting = await meetingModel.create({

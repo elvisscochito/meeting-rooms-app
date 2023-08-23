@@ -13,12 +13,23 @@ header.header {
   height: 4rem;
   background-color: #fff;
   border-bottom: 1px solid #e6e6e6;
+  position: relative;
 }
 
-header.header div {
+header.header span {
+  position: absolute;
+  top: 50%;
+  left: 5%;
+  transform: translateY(-50%);
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--brand-color);
+}
+
+/* header.header div {
   justify-content: flex-start;
   width: 100%;
-}
+} */
 
 div.content {
   display: flex;
@@ -30,15 +41,53 @@ div.content {
   overflow: hidden;
 }
 
+div.content div.container {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: .5rem;
+  place-items: center;
+}
+
 div.content h2.date {
   font-weight: 550;
-  /* max-inline-size: 20ch;
-  text-align: center; */
+  /* max-inline-size: 20ch; */
+  text-align: center;
 }
 
 div.content h2::first-letter {
   text-transform: uppercase;
 }
+
+h2.date {
+  position: relative;
+  width: 100%;
+}
+
+span.arrowButton {
+  /* display: inline-block;
+  border: none;
+  background-color: transparent;
+  border-radius: 0.5rem;
+  padding: 0.2rem .5rem; */
+  font-size: 1.5rem;
+  font-weight: 550;
+  color: var(--brand-color);
+  /* transition: all 0.2s ease-in-out; */
+}
+
+/* button.arrowButtonLeft {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  transform: translateY(-100%);
+}
+
+button.arrowButtonRight {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  transform: translateY(-100%);
+} */
 
 div.roomSwitcher {
   display: flex;
@@ -62,10 +111,8 @@ button.room {
 }
 
 div.meetingsWrapper {
-  /* Fill available space */
   width: 100%;
   height: 100%;
-  /* Enable scrolling */
   overflow-y: auto;
   position: relative;
 }
@@ -82,13 +129,9 @@ div.meetings {
 
 span.noMeetingsMessage {
   position: absolute;
-  /* Set the position to absolute */
   top: 50%;
-  /* Move the top edge to the middle */
   left: 50%;
-  /* Move the left edge to the middle */
   transform: translate(-50%, -50%);
-  /* Center the message */
   text-align: center;
   font-size: 2rem;
   font-weight: 600;
@@ -119,8 +162,20 @@ div.card footer.cardFooter {
   width: 100%;
 }
 
-div.card footer.cardFooter span {
+div.card footer.cardFooter div.cardFooterInfo {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  /* gap: 0.5rem; */
+}
+
+div.card footer.cardFooter:has(span, .icon) {
   font-size: 0.8rem;
+}
+
+div.card footer.cardFooter .icon {
+  color: var(--brand-color);
 }
 
 footer.footer {

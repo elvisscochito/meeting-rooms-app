@@ -110,8 +110,8 @@ button.variant {
   /* transition: all 0.2s ease-in-out; */
 }
 
-/* button.button:disabled {
+button.button:disabled {
   background-color: rgba(217, 217, 217, 0.75);
   color: #fff;
   cursor: not-allowed;
-} */
+}

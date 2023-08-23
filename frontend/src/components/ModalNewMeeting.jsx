@@ -1,9 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import styles from '../styles/Modal.module.css';
-const ModalNewMeeting = ({ room, close }) => {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+const ModalNewMeeting = ({ room, addMeeting, close }) => {
   const [date, setDate] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
@@ -15,13 +13,38 @@ const ModalNewMeeting = ({ room, close }) => {
   const [maxTimeValue, setMaxTimeValue] = useState('20:00');
   const [minDateValue, setMinDateValue] = useState('');
   const [maxDateValue, setMaxDateValue] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [errorDateMessage, setErrorDateMessage] = useState('');
+  const [errorTimeMessage, setErrorTimeMessage] = useState('');
+  const [isMeetingCreated, setIsMeetingCreated] = useState(false);
+  const dialog = useRef(null);
 
   /**
-   * TODO: host debe ser un usuario registrado
+   * TODO: refactor useState
    */
-  const [host, setHost] = useState('');
-  /* const [isButtonDisabled, setIsButtonDisabled] = useState(true); */
+  const [form, setForm] = useState({
+    title: '',
+    description: '',
+    /* date: '',
+    startTime: '',
+    endTime: '',
+    duration: {
+      hours: 0,
+      minutes: 0
+    }, */
+    /**
+     *  TODO: host debe ser un usuario registrado
+     */
+    host: ''
+  });
+
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
 
   useEffect(() => {
     const fetchDateTime = async () => {
@@ -93,14 +116,48 @@ const ModalNewMeeting = ({ room, close }) => {
 
     if (validateDate(newDate)) {
       setDate(newDate);
-      setErrorMessage('');
+      setErrorDateMessage('');
     } else {
       setDate('');
-      setErrorMessage('Selecciona un día de lunes a sábado');
+      setErrorDateMessage('Selecciona un día de lunes a sábado');
     }
   }
 
-  const handleCreateMeeting = async () => {
+  useEffect(() => {
+    const handleMeetingSchedule = async () => {
+      try {
+        const response = await fetch(`http://localhost:3000/${room}/meeting?start=${date}T${startTime}&end=${date}T${endTime}`);
+
+        /* const start = new Date(`${date}T${startTime}`).toISOString();
+        const end = new Date(`${date}T${endTime}`).toISOString();
+
+        const response = await fetch(`http://localhost:3000/${room}/meeting/overlap`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            start,
+            end
+          })
+        }); */
+
+        const data = await response.json();
+
+        if (data.overlap) {
+          setErrorTimeMessage('Ya hay una reunión programada en ese horario');
+        } else {
+          setErrorTimeMessage('');
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    handleMeetingSchedule();
+  }, [/* date,  */startTime, endTime]);
+
+  const handleCreateMeeting = async (e) => {
+    e.preventDefault();
     try {
       const start = new Date(`${date}T${startTime}`).toISOString();
       const end = new Date(`${date}T${endTime}`).toISOString();
@@ -110,18 +167,25 @@ const ModalNewMeeting = ({ room, close }) => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          title,
-          description,
+          title: form.title,
+          description: form.description,
           start,
           end,
-          host
+          host: form.host
         })
       })
       const data = await response.json();
       console.log(data);
+
+      if (response.status === 201) {
+        setIsMeetingCreated(true);
+        addMeeting(data);
+      }
+
       handleClose();
     } catch (error) {
       console.log(error);
+      setIsMeetingCreated(false);
     }
   }
 
@@ -144,6 +208,14 @@ const ModalNewMeeting = ({ room, close }) => {
     calculateDuration();
   }, [startTime, endTime]);
 
+  useEffect(() => {
+    if (form.title && form.host && !errorDateMessage && !errorTimeMessage) {
+      setIsButtonDisabled(false);
+    } else {
+      setIsButtonDisabled(true);
+    }
+  }, [form.title, form.host, errorDateMessage, errorTimeMessage]);
+
   /* useEffect(() => {
     if (title && host) {
       setIsButtonDisabled(false);
@@ -153,9 +225,11 @@ const ModalNewMeeting = ({ room, close }) => {
   }, [title, host]); */
 
   const handleClose = () => {
-    setTitle('');
-    setDescription('');
-    setHost('');
+    setForm({
+      title: '',
+      description: '',
+      host: ''
+    });
     close();
   }
 
@@ -167,25 +241,25 @@ const ModalNewMeeting = ({ room, close }) => {
       <form className={styles.form} onSubmit={handleCreateMeeting}>
         <fieldset className={styles.fieldset}>
           <label className={styles.label} htmlFor="title">T&iacute;tulo</label>
-          <input type="text" className={styles.input} id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder='Obligatorio' required />
+          <input type="text" className={styles.input} id="title" name='title' value={form.title} onChange={handleChange} placeholder='Obligatorio' required />
         </fieldset>
 
         <fieldset className={styles.fieldset}>
           <label className={styles.label} htmlFor="description">Descripcci&oacute;n</label>
-          <textarea className={styles.textarea} id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder='Opcional' />
+          <textarea className={styles.textarea} id="description" name='description' value={form.description} onChange={handleChange} placeholder='Opcional' />
         </fieldset>
 
         <fieldset className={styles.fieldset}>
           <label className={styles.label} htmlFor="host">Host</label>
-          <input type="text" className={styles.input} id="host" value={host} onChange={(e) => setHost(e.target.value)} placeholder='Obligatorio' required />
+          <input type="text" className={styles.input} id="host" name='host' value={form.host} onChange={handleChange} placeholder='Obligatorio' required />
         </fieldset>
 
         <fieldset className={styles.fieldset}>
           <label className={styles.label} htmlFor="date">Day</label>
           <input type="date" className={styles.date} id="date" value={date} min={minDateValue} max={maxDateValue} onChange={handleDateChange} required />
           {
-            errorMessage && (
-              <span className={styles.error}>{errorMessage}</span>
+            errorDateMessage && (
+              <span className={styles.error}>{errorDateMessage}</span>
             )
           }
         </fieldset>
@@ -209,6 +283,7 @@ const ModalNewMeeting = ({ room, close }) => {
             duration.minutes === 0 ? '' : duration.minutes === 1 ? ` ${duration.minutes} min` : ` ${duration.minutes} mins`
           }
         </span>
+        <span className={styles.error}>{errorTimeMessage}</span>
 
         <footer className={styles.footer}>
           <button
@@ -217,9 +292,10 @@ const ModalNewMeeting = ({ room, close }) => {
             onClick={() => handleClose()}>Cancelar</button>
           <button
             type='submit'
-            className={`${styles.button} ${styles.default}`} /* disabled={isButtonDisabled} */>Crear</button>
+            className={`${styles.button} ${styles.default}`} disabled={isButtonDisabled}>Crear</button>
         </footer>
       </form>
+      <dialog ref={dialog}></dialog>
     </>
   )
 }

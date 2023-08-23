@@ -1,15 +1,19 @@
+import { faClock } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ModalNewMeeting from "../components/ModalNewMeeting";
 import styles from "../styles/Meetings.module.css";
-
+/* import { faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons'; */
+import { faUser } from '@fortawesome/free-solid-svg-icons';
 function Meetings() {
   const [meetings, setMeetings] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorRooms, setErrorRooms] = useState(null);
   const [errorMeetings, setErrorMeetings] = useState(null);
-  const [datetime, setDatetime] = useState(null);
+  /* const [datetime, setDatetime] = useState(null); */
+  const [currentDay, setCurrentDay] = useState(new Date());
   const dialog = useRef(null);
   const { room } = useParams();
   const navigate = useNavigate();
@@ -56,7 +60,10 @@ function Meetings() {
         setIsLoading(false);
       });
 
-  }, [room]);
+    /**
+     * TODO: HACER FETCH POR DÍA
+     */
+  }, [room, currentDay]);
 
   useEffect(() => {
     if (errorRooms) {
@@ -74,15 +81,16 @@ function Meetings() {
         const parsedDate = new Date(isoDateString);
 
         /** @note format date */
-        const options = {
+        /* const options = {
           weekday: "long",
           year: "numeric",
           month: "long",
           day: "numeric"
         };
-        const formattedLocalDate = parsedDate.toLocaleDateString("es-ES", options);
+        const formattedLocalDate = parsedDate.toLocaleDateString("es-ES", options); */
 
-        setDatetime(formattedLocalDate);
+        setCurrentDay(parsedDate);
+        console.warn(parsedDate);
       } catch (error) {
         console.error(error);
       }
@@ -105,22 +113,67 @@ function Meetings() {
   /** @note conditional styles (made const instead inline styles to avoid verbose code) */
   const buttonStyles = (isActive) => {
     return {
-      backgroundColor: isActive ? "#D9D9D9" : "#F5F5F5",
-      /* color: isActive ? "white" : "black", */
+      backgroundColor: isActive ? "#00743B" /* "#D9D9D9" */ : "#F5F5F5",
+      color: isActive ? "white" : "black",
       fontWeight: isActive ? "600" : "normal"
     };
   };
-  /* const addMeeting = (meeting) => {
+
+  const addMeeting = (meeting) => {
     setMeetings([...meetings, meeting]);
-  } */
+  }
+
+  const filteredMeetings = meetings.filter((meeting) => {
+    const meetingDate = new Date(meeting.start);
+    return (
+      meetingDate.getDate() === currentDay.getDate() &&
+      meetingDate.getMonth() === currentDay.getMonth() &&
+      meetingDate.getFullYear() === currentDay.getFullYear()
+    );
+  });
+
+  const sortedMeetings = filteredMeetings.sort((a, b) => {
+    return (
+      new Date(a.start) - new Date(b.start)
+    );
+  });
+
+  const goToPreviousDay = () => {
+    const previousDay = new Date(currentDay);
+    previousDay.setDate(currentDay.getDate() - 1);
+    setCurrentDay(previousDay);
+  };
+
+  const goToNextDay = () => {
+    const nextDay = new Date(currentDay);
+    nextDay.setDate(currentDay.getDate() + 1);
+    setCurrentDay(nextDay);
+  };
 
   return (
     <div className={styles.grid}>
       <header className={styles.header}>
-        <h1>&larr;Reuniones</h1>
+        <span>&larr;</span>
+        <h1>Reuniones</h1>
       </header>
       <div className={styles.content}>
-        <h2 className={styles.date}>{datetime}</h2>
+        <div className={styles.container}>
+          <span className={styles.arrowButton} onClick={goToPreviousDay}>
+            &larr;
+          </span>
+          <h2 className={styles.date}>
+            {/** @note convert currentDay Date object to a string to render it */}
+            {currentDay.toLocaleDateString("es-ES", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric"
+            })}
+          </h2>
+          <span className={styles.arrowButton} onClick={goToNextDay}>
+            &rarr;
+          </span>
+        </div>
 
         {
           isLoading ? (
@@ -155,13 +208,13 @@ function Meetings() {
                 ) : (
                   <div className={styles.meetingsWrapper}>
                     <div className={styles.meetings}>
-                      {meetings.length === 0 && !isLoading ? (
+                      {sortedMeetings.length === 0 && !isLoading ? (
                         <span className={styles.noMeetingsMessage}>
                           No meetings upcoming
                           {/* Sin reuniones programadas */}
                         </span>
                       ) : (
-                        meetings.map((meeting) => (
+                        sortedMeetings.map((meeting) => (
                           <div
                             className={styles.card}
                             key={meeting._id}
@@ -172,10 +225,56 @@ function Meetings() {
                               <h4>{meeting.description}</h4>
                             </header>
                             <footer className={styles.cardFooter}>
-                              <span>{new Date(meeting.start).toLocaleTimeString()}</span>
-                              <span>{new Date(meeting.end).toLocaleTimeString()}</span>
-                              {/* calcula y muestra la duración de la reunión teniendo en cuenta la hora de comiezno y la hora de final */}
-                              <span>{meeting.host}</span>
+                              <div className={styles.cardFooterInfo}>
+                                <FontAwesomeIcon className={styles.icon} icon={faClock} />
+                                &nbsp;
+                                <span>
+                                  {
+                                    new Date(meeting.start).toLocaleTimeString("es-ES", {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                      hour12: true
+                                    }).replace("00:00", "12:00").replace(/^0|:00/g, "").replace(/[\s.]+/g, "")
+                                  }
+                                </span>
+                                &nbsp;
+                                -
+                                &nbsp;
+                                <span>
+                                  {
+                                    new Date(meeting.end).toLocaleTimeString("es-ES", {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                      hour12: true
+                                    }).replace("00:00", "12:00").replace(/^0|:00/g, "").replace(/[\s.]+/g, "")
+                                  }
+                                </span>
+                                &nbsp;
+                                <span>
+                                  (
+                                  {(() => {
+                                    const durationInMillis = new Date(meeting.end) - new Date(meeting.start);
+                                    const durationInMinutes = Math.floor(durationInMillis / 60000);
+
+                                    const hours = Math.floor(durationInMinutes / 60);
+                                    const minutes = durationInMinutes % 60;
+
+                                    return (
+                                      <>
+                                        {hours === 0 ? '' : hours === 1 ? `${hours} hr` : `${hours} hrs`}
+                                        {hours > 0 && minutes > 0 ? " " : ""}
+                                        {minutes === 0 ? '' : minutes === 1 ? `${minutes} min` : `${minutes} mins`}
+                                      </>
+                                    );
+                                  })()}
+                                  )
+                                </span>
+                              </div>
+                              <div className={styles.cardFooterInfo}>
+                                <FontAwesomeIcon className={styles.icon} icon={faUser} />
+                                &nbsp;
+                                <span>{meeting.host}</span>
+                              </div>
                             </footer>
                           </div>
                         ))
@@ -191,7 +290,7 @@ function Meetings() {
       </div>
       <footer className={styles.footer}>
         <dialog ref={dialog}>
-          <ModalNewMeeting room={room} close={closeModal} />
+          <ModalNewMeeting room={room} addMeeting={addMeeting} close={closeModal} />
         </dialog>
         <button className={styles.button} onClick={openModal} disabled={isLoading}>Nueva reuni&oacute;n</button>
       </footer>
