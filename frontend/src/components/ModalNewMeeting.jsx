@@ -1,6 +1,7 @@
 /* import { faCalendarDay, faQuoteLeft, faTextHeight, faUser } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'; */
 import { useEffect, useRef, useState } from 'react';
+import apiUrlPrefix from '../config/apiUrlPrefix.js';
 import styles from '../styles/Modal.module.css';
 const ModalNewMeeting = ({ room, setMeetings, meetings, close }) => {
   const [date, setDate] = useState('');
@@ -50,7 +51,7 @@ const ModalNewMeeting = ({ room, setMeetings, meetings, close }) => {
   useEffect(() => {
     const fetchDateTime = async () => {
       try {
-        const response = await fetch("http://localhost:3000/datetime");
+        const response = await fetch(`${apiUrlPrefix}/datetime`);
         const date = await response.text();
 
         /** @note parse date to a date object */
@@ -127,12 +128,14 @@ const ModalNewMeeting = ({ room, setMeetings, meetings, close }) => {
   useEffect(() => {
     const handleMeetingSchedule = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/${room}/meeting?start=${date}T${startTime}&end=${date}T${endTime}`);
+        const start = new Date(`${date}T${startTime}`).toISOString();
+        const end = new Date(`${date}T${endTime}`).toISOString();
+        const response = await fetch(`${apiUrlPrefix}/${room}/meeting?start=${start}&end=${end}`);
 
         /* const start = new Date(`${date}T${startTime}`).toISOString();
         const end = new Date(`${date}T${endTime}`).toISOString();
 
-        const response = await fetch(`http://localhost:3000/${room}/meeting/overlap`, {
+        const response = await fetch(`${apiUrlPrefix}/${room}/meeting/overlap`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -162,7 +165,7 @@ const ModalNewMeeting = ({ room, setMeetings, meetings, close }) => {
     try {
       const start = new Date(`${date}T${startTime}`).toISOString();
       const end = new Date(`${date}T${endTime}`).toISOString();
-      const response = await fetch(`http://localhost:3000/${room}/meeting`, {
+      const response = await fetch(`${apiUrlPrefix}/${room}/meeting`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -176,7 +179,7 @@ const ModalNewMeeting = ({ room, setMeetings, meetings, close }) => {
         })
       })
       const data = await response.json();
-      console.log(data);
+      /* console.log(data); */
 
       if (response.status === 201) {
         setIsMeetingCreated(true);
