@@ -1,7 +1,8 @@
+/* import { faCalendarDay, faQuoteLeft, faTextHeight, faUser } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'; */
 import { useEffect, useRef, useState } from 'react';
-
 import styles from '../styles/Modal.module.css';
-const ModalNewMeeting = ({ room, addMeeting, close }) => {
+const ModalNewMeeting = ({ room, setMeetings, meetings, close }) => {
   const [date, setDate] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
@@ -154,7 +155,7 @@ const ModalNewMeeting = ({ room, addMeeting, close }) => {
       }
     };
     handleMeetingSchedule();
-  }, [/* date,  */startTime, endTime]);
+  }, [room, date, startTime, endTime]);
 
   const handleCreateMeeting = async (e) => {
     e.preventDefault();
@@ -233,6 +234,10 @@ const ModalNewMeeting = ({ room, addMeeting, close }) => {
     close();
   }
 
+  const addMeeting = (meeting) => {
+    setMeetings([...meetings, meeting]);
+  }
+
   return (
     <>
       <header>
@@ -240,22 +245,22 @@ const ModalNewMeeting = ({ room, addMeeting, close }) => {
       </header>
       <form className={styles.form} onSubmit={handleCreateMeeting}>
         <fieldset className={styles.fieldset}>
-          <label className={styles.label} htmlFor="title">T&iacute;tulo</label>
+          <label className={styles.label} htmlFor="title">{/* <FontAwesomeIcon className={styles.icon} icon={faTextHeight} /> */}T&iacute;tulo</label>
           <input type="text" className={styles.input} id="title" name='title' value={form.title} onChange={handleChange} placeholder='Obligatorio' required />
         </fieldset>
 
         <fieldset className={styles.fieldset}>
-          <label className={styles.label} htmlFor="description">Descripcci&oacute;n</label>
+          <label className={styles.label} htmlFor="description">{/* <FontAwesomeIcon className={styles.icon} icon={faQuoteLeft} /> */}Descripcci&oacute;n</label>
           <textarea className={styles.textarea} id="description" name='description' value={form.description} onChange={handleChange} placeholder='Opcional' />
         </fieldset>
 
         <fieldset className={styles.fieldset}>
-          <label className={styles.label} htmlFor="host">Host</label>
+          <label className={styles.label} htmlFor="host">{/* <FontAwesomeIcon className={styles.icon} icon={faUser} /> */}Host</label>
           <input type="text" className={styles.input} id="host" name='host' value={form.host} onChange={handleChange} placeholder='Obligatorio' required />
         </fieldset>
 
         <fieldset className={styles.fieldset}>
-          <label className={styles.label} htmlFor="date">Day</label>
+          <label className={styles.label} htmlFor="date">{/* <FontAwesomeIcon className={styles.icon} icon={faCalendarDay} /> */}Day</label>
           <input type="date" className={styles.date} id="date" value={date} min={minDateValue} max={maxDateValue} onChange={handleDateChange} required />
           {
             errorDateMessage && (

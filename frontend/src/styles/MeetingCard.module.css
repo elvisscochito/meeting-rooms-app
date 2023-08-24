@@ -1,0 +1,37 @@
+div.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  border: 1px solid #e6e6e6;
+  border-radius: 0.5rem;
+  padding: .5rem;
+  /* min-width: 18rem; */
+  width: 75%;
+  border-left-width: 15px;
+  /* border-left-color: var(--brand-color); */
+}
+
+div.card footer.cardFooter {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+div.card footer.cardFooter div.cardFooterInfo {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  /* gap: 0.5rem; */
+}
+
+div.card footer.cardFooter:has(span, .icon) {
+  font-size: 0.8rem;
+}
+
+div.card footer.cardFooter .icon {
+  color: var(--brand-color);
+}

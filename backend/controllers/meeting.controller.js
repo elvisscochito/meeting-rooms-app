@@ -8,9 +8,34 @@ export const getMeetings = async (req, res) => {
       return res.status(404).json({ message: "Room not found" });
     }
 
+    const date = new Date(req.query.date);
+    console.info("date: ", date);
+
+    const start = new Date(date);
+    start.setUTCHours(0, 0, 0, 0);
+    console.info("start: ", start);
+    const end = new Date(date);
+    end.setUTCHours(23, 59, 59, 999);
+    console.info("end: ", end);
+
+    /* const formattedDate = date.getFullYear() + "/" + (date.getMonth() + 1) + "/" + date.getDate(); */
+    /* const [year, month, day] = [date.getFullYear(), date.getMonth() + 1, date.getDate()];
+    const formattedDate = `${year}-${month}-${day}`; */
+    /* const [year, month, day] = date.split('T')[0].split('-');
+    const start = `${year}/${month}/${day}`; */
+    /* console.warn("formattedDate: ", formattedDate); */
+
+    /* const start = new Date(`${formattedDate}T00:00:00Z`);
+    console.log("start: ", start);
+    const end = new Date(`${formattedDate}T23:59:59.999Z`);
+    console.log("end: ", end); */
+
     /** @note get meetings and their room, both without __v field */
 
-    const meetings = await meetingModel.find({ room: room._id }, { __v: 0 }).populate('room', { __v: 0 });
+    const meetings = await meetingModel.find({
+      room: room._id,
+      start: { $gte: start, $lt: end }
+    }, { __v: 0 }).populate('room', { __v: 0 });
 
     res.status(200).json(meetings);
   }

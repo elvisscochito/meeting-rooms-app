@@ -1,11 +1,11 @@
-import { faClock } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import DateSlider from "../components/DateSlider";
+import MeetingsWrapper from '../components/MeetingsWrapper';
 import ModalNewMeeting from "../components/ModalNewMeeting";
+import RoomSwitcher from "../components/RoomSwitcher";
 import styles from "../styles/Meetings.module.css";
-/* import { faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons'; */
-import { faUser } from '@fortawesome/free-solid-svg-icons';
+
 function Meetings() {
   const [meetings, setMeetings] = useState([]);
   const [rooms, setRooms] = useState([]);
@@ -18,8 +18,32 @@ function Meetings() {
   const { room } = useParams();
   const navigate = useNavigate();
 
-  /**
-   * TODO DEJAR LAS SALAS y no cargar reuniones  */
+  useEffect(() => {
+    const fetchDateTime = async () => {
+      try {
+        const response = await fetch("http://localhost:3000/datetime");
+        const isoDateString = await response.text();
+
+        /** @note parse isoDateString to a date object */
+        const parsedDate = new Date(isoDateString);
+
+        /** @note format date */
+        /* const options = {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric"
+        };
+        const formattedLocalDate = parsedDate.toLocaleDateString("es-ES", options); */
+
+        setCurrentDay(parsedDate);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchDateTime();
+  }, []);
 
   useLayoutEffect(() => {
     const fetchRooms = async () => {
@@ -36,7 +60,7 @@ function Meetings() {
 
     const fetchMeetings = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/${room}/meetings`);
+        const response = await fetch(`http://localhost:3000/${room}/meetings?date=${currentDay.toISOString()}`);
         const meetings = await response.json();
         console.log(meetings);
         setMeetings(meetings);
@@ -71,32 +95,49 @@ function Meetings() {
     }
   }, [errorRooms]);
 
+  const handleRoomChange = (room) => {
+    navigate(`/${room}/meetings`, { replace: true });
+  }
+
   useEffect(() => {
-    const fetchDateTime = async () => {
-      try {
-        const response = await fetch("http://localhost:3000/datetime");
-        const isoDateString = await response.text();
+    const interval = setInterval(() => {
+      const meetingsBorder = meetings.map((meeting) => {
+        const now = new Date();
+        const meetingStart = new Date(meeting.start);
+        const meetingEnd = new Date(meeting.end);
 
-        /** @note parse isoDateString to a date object */
-        const parsedDate = new Date(isoDateString);
+        const isActiveMeeting = now >= meetingStart && now <= meetingEnd;
 
-        /** @note format date */
-        /* const options = {
-          weekday: "long",
-          year: "numeric",
-          month: "long",
-          day: "numeric"
+        /** @note push Notifications */
+        /* if (isActiveMeeting && !meeting.active) { */
+        // Meeting has just started, send notification
+        /* new Notification("Meeting Started", {
+          body: `${meeting.title} has started.`, */
+        /* vibrate: true */
+        /* });
+      } else if (!isActiveMeeting && meeting.active) { */
+        // Meeting has just ended, send notification
+        /* new Notification("Meeting Ended", {
+          body: `${meeting.title} has ended.`, */
+        /* vibrate: true */
+        /* });
+      } */
+
+        return {
+          ...meeting,
+          active: isActiveMeeting
         };
-        const formattedLocalDate = parsedDate.toLocaleDateString("es-ES", options); */
+      });
 
-        setCurrentDay(parsedDate);
-        console.warn(parsedDate);
-      } catch (error) {
-        console.error(error);
-      }
-    };
+      setMeetings(meetingsBorder);
+    }, 1000)
 
-    fetchDateTime();
+    return () => clearInterval(interval);
+  }, [meetings]);
+
+  useEffect(() => {
+    /** @note request notifications permission */
+    Notification.requestPermission();
   }, []);
 
   const openModal = () => {
@@ -104,23 +145,6 @@ function Meetings() {
   }
   const closeModal = () => {
     dialog.current.close();
-  }
-
-  const handleRoomChange = (room) => {
-    navigate(`/${room}/meetings`, { replace: true });
-  }
-
-  /** @note conditional styles (made const instead inline styles to avoid verbose code) */
-  const buttonStyles = (isActive) => {
-    return {
-      backgroundColor: isActive ? "#00743B" /* "#D9D9D9" */ : "#F5F5F5",
-      color: isActive ? "white" : "black",
-      fontWeight: isActive ? "600" : "normal"
-    };
-  };
-
-  const addMeeting = (meeting) => {
-    setMeetings([...meetings, meeting]);
   }
 
   const filteredMeetings = meetings.filter((meeting) => {
@@ -138,18 +162,6 @@ function Meetings() {
     );
   });
 
-  const goToPreviousDay = () => {
-    const previousDay = new Date(currentDay);
-    previousDay.setDate(currentDay.getDate() - 1);
-    setCurrentDay(previousDay);
-  };
-
-  const goToNextDay = () => {
-    const nextDay = new Date(currentDay);
-    nextDay.setDate(currentDay.getDate() + 1);
-    setCurrentDay(nextDay);
-  };
-
   return (
     <div className={styles.grid}>
       <header className={styles.header}>
@@ -157,23 +169,7 @@ function Meetings() {
         <h1>Reuniones</h1>
       </header>
       <div className={styles.content}>
-        <div className={styles.container}>
-          <span className={styles.arrowButton} onClick={goToPreviousDay}>
-            &larr;
-          </span>
-          <h2 className={styles.date}>
-            {/** @note convert currentDay Date object to a string to render it */}
-            {currentDay.toLocaleDateString("es-ES", {
-              weekday: "long",
-              year: "numeric",
-              month: "long",
-              day: "numeric"
-            })}
-          </h2>
-          <span className={styles.arrowButton} onClick={goToNextDay}>
-            &rarr;
-          </span>
-        </div>
+        <DateSlider currentDay={currentDay} setCurrentDay={setCurrentDay} />
 
         {
           isLoading ? (
@@ -184,21 +180,7 @@ function Meetings() {
                 errorRooms ? (
                   <span>{errorRooms}</span>
                 ) : (
-                  <div className={styles.roomSwitcher}>
-                    {
-                      rooms.map((rooms) => (
-                        <button
-                          className={styles.room}
-                          key={rooms._id}
-                          onClick={() => handleRoomChange(rooms.name)}
-                          style={buttonStyles(rooms.name === room)}
-                        /* disabled={rooms.id === currentActiveTab} */
-                        >
-                          {rooms.name}
-                        </button>
-                      ))
-                    }
-                  </div>
+                  <RoomSwitcher rooms={rooms} handleRoomChange={handleRoomChange} room={room} />
                 )
               }
 
@@ -206,82 +188,7 @@ function Meetings() {
                 errorMeetings ? (
                   <span>{errorMeetings}</span>
                 ) : (
-                  <div className={styles.meetingsWrapper}>
-                    <div className={styles.meetings}>
-                      {sortedMeetings.length === 0 && !isLoading ? (
-                        <span className={styles.noMeetingsMessage}>
-                          No meetings upcoming
-                          {/* Sin reuniones programadas */}
-                        </span>
-                      ) : (
-                        sortedMeetings.map((meeting) => (
-                          <div
-                            className={styles.card}
-                            key={meeting._id}
-                            style={{ borderLeftColor: meeting.active ? "#00743B" : "#e6e6e6" }}
-                          >
-                            <header>
-                              <h3>{meeting.title}</h3>
-                              <h4>{meeting.description}</h4>
-                            </header>
-                            <footer className={styles.cardFooter}>
-                              <div className={styles.cardFooterInfo}>
-                                <FontAwesomeIcon className={styles.icon} icon={faClock} />
-                                &nbsp;
-                                <span>
-                                  {
-                                    new Date(meeting.start).toLocaleTimeString("es-ES", {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                      hour12: true
-                                    }).replace("00:00", "12:00").replace(/^0|:00/g, "").replace(/[\s.]+/g, "")
-                                  }
-                                </span>
-                                &nbsp;
-                                -
-                                &nbsp;
-                                <span>
-                                  {
-                                    new Date(meeting.end).toLocaleTimeString("es-ES", {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                      hour12: true
-                                    }).replace("00:00", "12:00").replace(/^0|:00/g, "").replace(/[\s.]+/g, "")
-                                  }
-                                </span>
-                                &nbsp;
-                                <span>
-                                  (
-                                  {(() => {
-                                    const durationInMillis = new Date(meeting.end) - new Date(meeting.start);
-                                    const durationInMinutes = Math.floor(durationInMillis / 60000);
-
-                                    const hours = Math.floor(durationInMinutes / 60);
-                                    const minutes = durationInMinutes % 60;
-
-                                    return (
-                                      <>
-                                        {hours === 0 ? '' : hours === 1 ? `${hours} hr` : `${hours} hrs`}
-                                        {hours > 0 && minutes > 0 ? " " : ""}
-                                        {minutes === 0 ? '' : minutes === 1 ? `${minutes} min` : `${minutes} mins`}
-                                      </>
-                                    );
-                                  })()}
-                                  )
-                                </span>
-                              </div>
-                              <div className={styles.cardFooterInfo}>
-                                <FontAwesomeIcon className={styles.icon} icon={faUser} />
-                                &nbsp;
-                                <span>{meeting.host}</span>
-                              </div>
-                            </footer>
-                          </div>
-                        ))
-                      )
-                      }
-                    </div>
-                  </div>
+                  <MeetingsWrapper sortedMeetings={sortedMeetings} isLoading={isLoading} />
                 )
               }
             </>
@@ -290,7 +197,7 @@ function Meetings() {
       </div>
       <footer className={styles.footer}>
         <dialog ref={dialog}>
-          <ModalNewMeeting room={room} addMeeting={addMeeting} close={closeModal} />
+          <ModalNewMeeting room={room} setMeetings={setMeetings} meetings={meetings} close={closeModal} />
         </dialog>
         <button className={styles.button} onClick={openModal} disabled={isLoading}>Nueva reuni&oacute;n</button>
       </footer>
