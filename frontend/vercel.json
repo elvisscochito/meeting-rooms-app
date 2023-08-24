@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "src": "/(.*)",
-      "dest": "index.js"
+      "dest": "index.html"
     }
   ]
 }
