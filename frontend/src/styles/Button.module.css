@@ -1,0 +1,16 @@
+button.button {
+  display: inline-block;
+  border: none;
+  border-radius: .3rem;
+  padding: 0.5rem 1rem;
+  /*transition: all 0.2s ease-in-out;
+  */
+}
+
+button.default {
+  background-color: var(--brand-color);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  /* transition: all 0.2s ease-in-out; */
+}
