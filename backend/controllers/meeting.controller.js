@@ -53,7 +53,9 @@ export const checkMeetingOverlap = async (req, res) => {
     }
 
     const start = new Date(req.query.start);
+    console.log("start: ", start);
     const end = new Date(req.query.end);
+    console.log("end: ", end);
 
     /**
      *  @note check if any meeting overload schedule

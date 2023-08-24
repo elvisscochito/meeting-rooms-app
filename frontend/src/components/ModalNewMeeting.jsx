@@ -128,7 +128,9 @@ const ModalNewMeeting = ({ room, setMeetings, meetings, close }) => {
   useEffect(() => {
     const handleMeetingSchedule = async () => {
       try {
-        const response = await fetch(`${apiUrlPrefix}/${room}/meeting?start=${date}T${startTime}&end=${date}T${endTime}`);
+        const start = new Date(`${date}T${startTime}`).toISOString();
+        const end = new Date(`${date}T${endTime}`).toISOString();
+        const response = await fetch(`${apiUrlPrefix}/${room}/meeting?start=${start}&end=${end}`);
 
         /* const start = new Date(`${date}T${startTime}`).toISOString();
         const end = new Date(`${date}T${endTime}`).toISOString();
@@ -177,7 +179,7 @@ const ModalNewMeeting = ({ room, setMeetings, meetings, close }) => {
         })
       })
       const data = await response.json();
-      console.log(data);
+      /* console.log(data); */
 
       if (response.status === 201) {
         setIsMeetingCreated(true);

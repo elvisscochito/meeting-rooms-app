@@ -51,7 +51,7 @@ function Meetings() {
       try {
         const response = await fetch(`${apiUrlPrefix}/rooms`);
         const rooms = await response.json();
-        console.log(rooms);
+        /* console.log(rooms); */
         setRooms(rooms);
       } catch (error) {
         setErrorRooms("Error cargando salas");
@@ -61,9 +61,12 @@ function Meetings() {
 
     const fetchMeetings = async () => {
       try {
+        /* const date = new Date(currentDay);
+        date.setHours(0, 0, 0, 0);
+        console.log("date.toISOString(): ", date.toISOString()); */
         const response = await fetch(`${apiUrlPrefix}/${room}/meetings?date=${currentDay.toISOString()}`);
         const meetings = await response.json();
-        console.log(meetings);
+        /* console.log(meetings); */
         setMeetings(meetings);
       } catch (error) {
         setErrorMeetings("Error cargando reuniones");
