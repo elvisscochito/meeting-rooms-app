@@ -17,6 +17,10 @@ connectDB();
 app.set("port", process.env.PORT || 3000);
 const PORT = app.get("port");
 
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
+
 app.use('/', roomRoutes);
 app.use('/', meetingRoutes);
 app.use('/', datetimeRoutes);
