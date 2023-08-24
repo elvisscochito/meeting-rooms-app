@@ -4,6 +4,7 @@ import DateSlider from "../components/DateSlider";
 import MeetingsWrapper from '../components/MeetingsWrapper';
 import ModalNewMeeting from "../components/ModalNewMeeting";
 import RoomSwitcher from "../components/RoomSwitcher";
+import apiUrlPrefix from "../config/apiUrlPrefix.js";
 import styles from "../styles/Meetings.module.css";
 
 function Meetings() {
@@ -21,7 +22,7 @@ function Meetings() {
   useEffect(() => {
     const fetchDateTime = async () => {
       try {
-        const response = await fetch("http://localhost:3000/datetime");
+        const response = await fetch(`${apiUrlPrefix}/datetime`);
         const isoDateString = await response.text();
 
         /** @note parse isoDateString to a date object */
@@ -48,7 +49,7 @@ function Meetings() {
   useLayoutEffect(() => {
     const fetchRooms = async () => {
       try {
-        const response = await fetch("http://localhost:3000/rooms");
+        const response = await fetch(`${apiUrlPrefix}/rooms`);
         const rooms = await response.json();
         console.log(rooms);
         setRooms(rooms);
@@ -60,7 +61,7 @@ function Meetings() {
 
     const fetchMeetings = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/${room}/meetings?date=${currentDay.toISOString()}`);
+        const response = await fetch(`${apiUrlPrefix}/${room}/meetings?date=${currentDay.toISOString()}`);
         const meetings = await response.json();
         console.log(meetings);
         setMeetings(meetings);
