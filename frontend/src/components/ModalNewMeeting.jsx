@@ -1,10 +1,12 @@
 /* import { faCalendarDay, faQuoteLeft, faTextHeight, faUser } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'; */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import apiUrlPrefix from '../config/apiUrlPrefix.js';
 import styles from '../styles/Modal.module.css';
-const ModalNewMeeting = ({ room, setMeetings, meetings, close }) => {
-  const [date, setDate] = useState('');
+import { dateOptions, timeOptions } from '../utils/utils.js';
+
+const ModalNewMeeting = ({ room, currentDate, setCurrentDate, setMeetings, meetings, close, openSubModal, closeSubModal, setIsMeetingCreated }) => {
+  const [inputDate, setInputDate] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [duration, setDuration] = useState({
@@ -17,8 +19,7 @@ const ModalNewMeeting = ({ room, setMeetings, meetings, close }) => {
   const [maxDateValue, setMaxDateValue] = useState('');
   const [errorDateMessage, setErrorDateMessage] = useState('');
   const [errorTimeMessage, setErrorTimeMessage] = useState('');
-  const [isMeetingCreated, setIsMeetingCreated] = useState(false);
-  const dialog = useRef(null);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
 
   /**
    * TODO: refactor useState
@@ -46,64 +47,56 @@ const ModalNewMeeting = ({ room, setMeetings, meetings, close }) => {
     });
   };
 
-  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+  const formatDate = (date) => {
+    const localDate = date.toLocaleDateString("es-ES", dateOptions);
+    const [day, month, year] = localDate.split("/");
+    const formattedLocalDate = `${year}-${month}-${day}`;
+    console.log("date formatDate", formattedLocalDate);
+    /* const year = inputDate.getFullYear();
+    const month = (inputDate.getMonth() + 1).toString().padStart(2, '0');
+    const day = inputDate.getDate().toString().padStart(2, '0'); */
+    return `${year}-${month}-${day}`;
+  };
 
   useEffect(() => {
-    const fetchDateTime = async () => {
-      try {
-        const response = await fetch(`${apiUrlPrefix}/datetime`);
-        const date = await response.text();
+    const createDates = () => {
 
-        /** @note parse date to a date object */
-        const parsedDate = new Date(date);
+      /** @note create a new date object (to avoid override the original one) */
+      const date = new Date(currentDate);
 
-        const dateOptions = {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit"
-        };
+      const inputDate = formatDate(date);
 
-        const timeOptions = {
-          hour: "2-digit",
-          minute: "2-digit"
-        };
+      date.setHours(date.getHours() + 1);
+      const startTime = date.toLocaleTimeString("es-ES", timeOptions);
 
-        const localDate = parsedDate.toLocaleDateString("es-ES", dateOptions);
+      date.setHours(date.getHours() + 1);
+      const endTime = date.toLocaleTimeString("es-ES", timeOptions);
 
-        const [day, month, year] = localDate.split("/");
-        const inputDate = `${year}-${month}-${day}`;
+      /** @note MAX-DATE START */
 
-        parsedDate.setHours(parsedDate.getHours() + 1);
-        const startTime = parsedDate.toLocaleTimeString("es-ES", timeOptions);
+      const maxDate = new Date(inputDate);
+      maxDate.setDate(maxDate.getDate() + 7);
 
-        parsedDate.setHours(parsedDate.getHours() + 1);
-        const endTime = parsedDate.toLocaleTimeString("es-ES", timeOptions);
+      /** @note set the whole next week until saturday */
+      maxDate.setDate(maxDate.getDate() + (6 - maxDate.getDay()));
 
-        /** @note MAX-DATE START */
+      const [maxDay, maxMonth, maxYear] = maxDate.toLocaleDateString("es-ES", dateOptions).split("/");
+      const maxInputDate = `${maxYear}-${maxMonth}-${maxDay}`;
 
-        const maxDate = new Date(inputDate);
-        maxDate.setDate(maxDate.getDate() + 7);
+      /** @note MAX-DATE END */
 
-        /** @note set the whole next week until saturday */
-        maxDate.setDate(maxDate.getDate() + (6 - maxDate.getDay()));
-
-        const [maxDay, maxMonth, maxYear] = maxDate.toLocaleDateString("es-ES", dateOptions).split("/");
-        const maxInputDate = `${maxYear}-${maxMonth}-${maxDay}`;
-
-        /** @note MAX-DATE END */
-
-        setDate(inputDate);
-        setMinDateValue(inputDate);
-        setMaxDateValue(maxInputDate);
-        setStartTime(startTime);
-        setEndTime(endTime);
-      } catch (error) {
+      setInputDate(inputDate);
+      setMinDateValue(inputDate);
+      setMaxDateValue(maxInputDate);
+      setStartTime(startTime);
+      setEndTime(endTime);
+      /* } catch (error) {
         console.error(error);
-      }
+      } */
     };
 
-    fetchDateTime();
-  }, []);
+    createDates();
+  }, [currentDate]);
 
   const validateDate = (inputDate) => {
     const selectedDate = new Date(inputDate);
@@ -117,10 +110,10 @@ const ModalNewMeeting = ({ room, setMeetings, meetings, close }) => {
     const newDate = e.target.value;
 
     if (validateDate(newDate)) {
-      setDate(newDate);
+      setInputDate(newDate);
       setErrorDateMessage('');
     } else {
-      setDate('');
+      setInputDate('');
       setErrorDateMessage('Selecciona un día de lunes a sábado');
     }
   }
@@ -128,23 +121,9 @@ const ModalNewMeeting = ({ room, setMeetings, meetings, close }) => {
   useEffect(() => {
     const handleMeetingSchedule = async () => {
       try {
-        const start = new Date(`${date}T${startTime}`).toISOString();
-        const end = new Date(`${date}T${endTime}`).toISOString();
+        const start = new Date(`${inputDate}T${startTime}`).toISOString();
+        const end = new Date(`${inputDate}T${endTime}`).toISOString();
         const response = await fetch(`${apiUrlPrefix}/${room}/meeting?start=${start}&end=${end}`);
-
-        /* const start = new Date(`${date}T${startTime}`).toISOString();
-        const end = new Date(`${date}T${endTime}`).toISOString();
-
-        const response = await fetch(`${apiUrlPrefix}/${room}/meeting/overlap`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            start,
-            end
-          })
-        }); */
 
         const data = await response.json();
 
@@ -158,13 +137,28 @@ const ModalNewMeeting = ({ room, setMeetings, meetings, close }) => {
       }
     };
     handleMeetingSchedule();
-  }, [room, date, startTime, endTime]);
+  }, [room, inputDate, startTime, endTime]);
+
+  const goToDate = (dateParam) => {
+    const date = new Date(dateParam);
+    date.setDate(new Date(inputDate).getDate() + 1);
+    return date;
+  }
 
   const handleCreateMeeting = async (e) => {
     e.preventDefault();
+
+    /** @note prevent click the button multiple times */
+    if (isButtonDisabled) {
+      return;
+    }
+
+    /** @note set to true while process the request */
+    setIsButtonDisabled(true);
+
     try {
-      const start = new Date(`${date}T${startTime}`).toISOString();
-      const end = new Date(`${date}T${endTime}`).toISOString();
+      const start = new Date(`${inputDate}T${startTime}`).toISOString();
+      const end = new Date(`${inputDate}T${endTime}`).toISOString();
       const response = await fetch(`${apiUrlPrefix}/${room}/meeting`, {
         method: 'POST',
         headers: {
@@ -182,21 +176,41 @@ const ModalNewMeeting = ({ room, setMeetings, meetings, close }) => {
       /* console.log(data); */
 
       if (response.status === 201) {
+        setIsButtonDisabled(true);
         setIsMeetingCreated(true);
         addMeeting(data);
+        if (inputDate !== formatDate(currentDate)) {
+          const moveDate = goToDate(currentDate);
+          console.log("moveDate", moveDate);
+          setCurrentDate(moveDate);
+        }
+
+        openSubModal();
+
+        /* throw new Error("Simulated error"); */
+
+        setTimeout(() => {
+          closeSubModal();
+        }, 3000);
+
+      } else {
+        setIsMeetingCreated(false);
       }
 
       handleClose();
     } catch (error) {
       console.log(error);
       setIsMeetingCreated(false);
+    } finally {
+      /** @note reset the state after the request is complete */
+      setIsButtonDisabled(false);
     }
   }
 
   useEffect(() => {
     const calculateDuration = () => {
-      const start = new Date(`${date}T${startTime}`);
-      const end = new Date(`${date}T${endTime}`);
+      const start = new Date(`${inputDate}T${startTime}`);
+      const end = new Date(`${inputDate}T${endTime}`);
 
       const durationInMillis = end - start;
       const durationInMinutes = Math.floor(durationInMillis / (1000 * 60));
@@ -220,20 +234,15 @@ const ModalNewMeeting = ({ room, setMeetings, meetings, close }) => {
     }
   }, [form.title, form.host, errorDateMessage, errorTimeMessage]);
 
-  /* useEffect(() => {
-    if (title && host) {
-      setIsButtonDisabled(false);
-    } else {
-      setIsButtonDisabled(true);
-    }
-  }, [title, host]); */
-
   const handleClose = () => {
     setForm({
       title: '',
       description: '',
       host: ''
     });
+
+    setInputDate(formatDate(currentDate));
+
     close();
   }
 
@@ -264,7 +273,7 @@ const ModalNewMeeting = ({ room, setMeetings, meetings, close }) => {
 
         <fieldset className={styles.fieldset}>
           <label className={styles.label} htmlFor="date">{/* <FontAwesomeIcon className={styles.icon} icon={faCalendarDay} /> */}Day</label>
-          <input type="date" className={styles.date} id="date" value={date} min={minDateValue} max={maxDateValue} onChange={handleDateChange} required />
+          <input type="date" className={styles.date} id="date" value={inputDate} min={minDateValue} max={maxDateValue} onChange={handleDateChange} required />
           {
             errorDateMessage && (
               <span className={styles.error}>{errorDateMessage}</span>
@@ -303,7 +312,6 @@ const ModalNewMeeting = ({ room, setMeetings, meetings, close }) => {
             className={`${styles.button} ${styles.default}`} disabled={isButtonDisabled}>Crear</button>
         </footer>
       </form>
-      <dialog ref={dialog}></dialog>
     </>
   )
 }

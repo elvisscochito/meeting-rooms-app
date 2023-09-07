@@ -1,7 +1,7 @@
 import styles from "../styles/MeetingsWrapper.module.css";
 import MeetingCard from "./MeetingCard";
 
-const MeetingsWrapper = ({ sortedMeetings, isLoading }) => {
+const MeetingsWrapper = ({ datetime, currentDate, setCurrentDate, room, rooms, setMeetings, sortedMeetings, setIsMeetingUpdated, openUpdateResponseModal, closeUpdateResponseModal, isLoading }) => {
   return (
     <div className={styles.meetingsWrapper}>
       <div className={styles.meetings}>
@@ -20,7 +20,7 @@ const MeetingsWrapper = ({ sortedMeetings, isLoading }) => {
             const isActiveMeeting = now >= meetingStart && now <= meetingEnd;
             return ( */
 
-            <MeetingCard meeting={meeting} key={meeting._id} />
+            <MeetingCard datetime={datetime} currentDate={currentDate} setCurrentDate={setCurrentDate} room={room} rooms={rooms} setMeetings={setMeetings} sortedMeetings={sortedMeetings} meeting={meeting} setIsMeetingUpdated={setIsMeetingUpdated} openUpdateResponseModal={openUpdateResponseModal} closeUpdateResponseModal={closeUpdateResponseModal} key={meeting._id} />
 
             /* ) */
           /* } */))

@@ -1,0 +1,47 @@
+div.container {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: .5rem;
+  place-items: center;
+}
+
+h2.date {
+  font-weight: 550;
+  /* max-inline-size: 20ch; */
+  text-align: center;
+}
+
+h2::first-letter {
+  text-transform: uppercase;
+}
+
+h2.date {
+  position: relative;
+  width: 100%;
+}
+
+span.arrowButton {
+  /* display: inline-block;
+  border: none;
+  background-color: transparent;
+  border-radius: 0.5rem;
+  padding: 0.2rem .5rem; */
+  font-size: 1.5rem;
+  font-weight: 550;
+  color: var(--brand-color);
+  /* transition: all 0.2s ease-in-out; */
+}
+
+/* button.arrowButtonLeft {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  transform: translateY(-100%);
+}
+
+button.arrowButtonRight {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  transform: translateY(-100%);
+} */

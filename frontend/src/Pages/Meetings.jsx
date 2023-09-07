@@ -1,7 +1,10 @@
+import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import DateSlider from "../components/DateSlider";
 import MeetingsWrapper from '../components/MeetingsWrapper';
+import Modal from "../components/Modal";
 import ModalNewMeeting from "../components/ModalNewMeeting";
 import RoomSwitcher from "../components/RoomSwitcher";
 import apiUrlPrefix from "../config/apiUrlPrefix.js";
@@ -14,8 +17,13 @@ function Meetings() {
   const [errorRooms, setErrorRooms] = useState(null);
   const [errorMeetings, setErrorMeetings] = useState(null);
   /* const [datetime, setDatetime] = useState(null); */
-  const [currentDay, setCurrentDay] = useState(new Date());
+  const [datetime, setDatetime] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [isMeetingCreated, setIsMeetingCreated] = useState(false);
+  const [isMeetingUpdated, setIsMeetingUpdated] = useState(false);
   const dialog = useRef(null);
+  const subModal = useRef(null);
+  const updateResponseModal = useRef(null);
   const { room } = useParams();
   const navigate = useNavigate();
 
@@ -37,7 +45,12 @@ function Meetings() {
         };
         const formattedLocalDate = parsedDate.toLocaleDateString("es-ES", options); */
 
-        setCurrentDay(parsedDate);
+        /* if (parsedDate) { */
+        setDatetime(parsedDate);
+        /* } else {
+          setDatetime(new Date());
+        } */
+        setCurrentDate(parsedDate);
       } catch (error) {
         console.error(error);
       }
@@ -61,10 +74,7 @@ function Meetings() {
 
     const fetchMeetings = async () => {
       try {
-        /* const date = new Date(currentDay);
-        date.setHours(0, 0, 0, 0);
-        console.log("date.toISOString(): ", date.toISOString()); */
-        const response = await fetch(`${apiUrlPrefix}/${room}/meetings?date=${currentDay.toISOString()}`);
+        const response = await fetch(`http://localhost:3000/${room}/meetings?date=${currentDate.toISOString()}`);
         const meetings = await response.json();
         /* console.log(meetings); */
         setMeetings(meetings);
@@ -91,7 +101,7 @@ function Meetings() {
     /**
      * TODO: HACER FETCH POR DÍA
      */
-  }, [room, currentDay]);
+  }, [room, currentDate]);
 
   useEffect(() => {
     if (errorRooms) {
@@ -139,10 +149,10 @@ function Meetings() {
     return () => clearInterval(interval);
   }, [meetings]);
 
-  useEffect(() => {
-    /** @note request notifications permission */
-    Notification.requestPermission();
-  }, []);
+  /* useEffect(() => { */
+  /** @note request notifications permission */
+  /* Notification.requestPermission();
+}, []); */
 
   const openModal = () => {
     dialog.current.showModal();
@@ -154,9 +164,9 @@ function Meetings() {
   const filteredMeetings = meetings.filter((meeting) => {
     const meetingDate = new Date(meeting.start);
     return (
-      meetingDate.getDate() === currentDay.getDate() &&
-      meetingDate.getMonth() === currentDay.getMonth() &&
-      meetingDate.getFullYear() === currentDay.getFullYear()
+      meetingDate.getDate() === currentDate.getDate() &&
+      meetingDate.getMonth() === currentDate.getMonth() &&
+      meetingDate.getFullYear() === currentDate.getFullYear()
     );
   });
 
@@ -166,14 +176,35 @@ function Meetings() {
     );
   });
 
+  const openSubModal = () => {
+    subModal.current.showModal();
+  }
+  const closeSubModal = () => {
+    subModal.current.close();
+  }
+
+  const openUpdateResponseModal = () => {
+    updateResponseModal.current.showModal();
+  }
+
+  const closeUpdateResponseModal = () => {
+    updateResponseModal.current.close();
+  }
+
+  const goToHome = () => {
+    navigate('/');
+  }
+
+  console.log(meetings);
+
   return (
     <div className={styles.grid}>
       <header className={styles.header}>
-        <span>&larr;</span>
+        <span><FontAwesomeIcon icon={faArrowLeft} onClick={() => goToHome()} /></span>
         <h1>Reuniones</h1>
       </header>
       <div className={styles.content}>
-        <DateSlider currentDay={currentDay} setCurrentDay={setCurrentDay} />
+        <DateSlider currentDate={currentDate} setCurrentDate={setCurrentDate} />
 
         {
           isLoading ? (
@@ -192,7 +223,7 @@ function Meetings() {
                 errorMeetings ? (
                   <span>{errorMeetings}</span>
                 ) : (
-                  <MeetingsWrapper sortedMeetings={sortedMeetings} isLoading={isLoading} />
+                  <MeetingsWrapper datetime={datetime} currentDate={currentDate} setCurrentDate={setCurrentDate} room={room} rooms={rooms} sortedMeetings={sortedMeetings} setMeetings={setMeetings} setIsMeetingUpdated={setIsMeetingUpdated} openUpdateResponseModal={openUpdateResponseModal} closeUpdateResponseModal={closeUpdateResponseModal} isLoading={isLoading} />
                 )
               }
             </>
@@ -201,10 +232,29 @@ function Meetings() {
       </div>
       <footer className={styles.footer}>
         <dialog ref={dialog}>
-          <ModalNewMeeting room={room} setMeetings={setMeetings} meetings={meetings} close={closeModal} />
+          <ModalNewMeeting room={room} currentDate={currentDate} setCurrentDate={setCurrentDate} setMeetings={setMeetings} meetings={meetings} close={closeModal} openSubModal={openSubModal} closeSubModal={closeSubModal} setIsMeetingCreated={setIsMeetingCreated} />
         </dialog>
         <button className={styles.button} onClick={openModal} disabled={isLoading}>Nueva reuni&oacute;n</button>
       </footer>
+      <dialog ref={subModal}>
+        {
+          isMeetingCreated ? (
+            <Modal type={"message"} title={"Aviso"} message={"Reunión creada exitosamente"} close={closeSubModal} />
+          ) : (
+            <Modal type={"error"} title={"Error"} message={"Error al crear la reunión"} close={closeSubModal} />
+          )
+        }
+      </dialog>
+
+      <dialog ref={updateResponseModal}>
+        {
+          isMeetingUpdated ? (
+            <Modal type={"message"} title={"Aviso"} message={"Reunión actualizada exitosamente"} close={closeUpdateResponseModal} />
+          ) : (
+            <Modal type={"error"} title={"Error"} message={"Error al actualizar la reunión"} close={closeUpdateResponseModal} />
+          )
+        }
+      </dialog>
     </div>
   );
 }
