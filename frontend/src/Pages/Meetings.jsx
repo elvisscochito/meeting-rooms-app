@@ -74,7 +74,7 @@ function Meetings() {
 
     const fetchMeetings = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/${room}/meetings?date=${currentDate.toISOString()}`);
+        const response = await fetch(`${apiUrlPrefix}${room}/meetings?date=${currentDate.toISOString()}`);
         const meetings = await response.json();
         /* console.log(meetings); */
         setMeetings(meetings);
@@ -115,12 +115,12 @@ function Meetings() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const meetingsBorder = meetings.map((meeting) => {
+      const meetingsUpdated = meetings.map((meeting) => {
         const now = new Date();
         const meetingStart = new Date(meeting.start);
         const meetingEnd = new Date(meeting.end);
 
-        const isActiveMeeting = now >= meetingStart && now <= meetingEnd;
+        const meetingIsOngoing = now >= meetingStart && now <= meetingEnd;
 
         /** @note push Notifications */
         /* if (isActiveMeeting && !meeting.active) { */
@@ -137,13 +137,15 @@ function Meetings() {
         /* });
       } */
 
+        const meetingStatus = meetingIsOngoing ? "ongoing" : now > meetingEnd ? "ended" : "upcoming";
+
         return {
           ...meeting,
-          active: isActiveMeeting
+          status: meetingStatus
         };
       });
 
-      setMeetings(meetingsBorder);
+      setMeetings(meetingsUpdated);
     }, 1000)
 
     return () => clearInterval(interval);
@@ -234,7 +236,13 @@ function Meetings() {
         <dialog ref={dialog}>
           <ModalNewMeeting room={room} currentDate={currentDate} setCurrentDate={setCurrentDate} setMeetings={setMeetings} meetings={meetings} close={closeModal} openSubModal={openSubModal} closeSubModal={closeSubModal} setIsMeetingCreated={setIsMeetingCreated} />
         </dialog>
-        <button className={styles.button} onClick={openModal} disabled={isLoading}>Nueva reuni&oacute;n</button>
+        {
+          currentDate.getDate() >= datetime.getDate() ? (
+            <button className={styles.button} onClick={openModal} disabled={isLoading}>Nueva reuni&oacute;n</button>
+          ) : (
+            <button className={styles.button} disabled={true}>Nueva reuni&oacute;n</button>
+          )
+        }
       </footer>
       <dialog ref={subModal}>
         {

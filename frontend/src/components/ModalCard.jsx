@@ -2,21 +2,25 @@ import { faCircleDot, faCircleExclamation, faCircleInfo, faClockRotateLeft, faTr
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import apiUrlPrefix from '../config/apiUrlPrefix.js';
+import apiUrlPrefix, { apiUrlPrefixLocal } from '../config/apiUrlPrefix.js';
 import styles from '../styles/ModalCard.module.css';
 import { dateOptions, timeOptions } from '../utils/utils.js';
 
-const ModalCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMeetings, sortedMeetings, meeting, setIsMeetingUpdated, openUpdateResponseModal, closeUpdateResponseModal, close }) => {
+const ModalCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMeetings, sortedMeetings, meeting, setIsMeetingUpdated, openUpdateResponseModal, closeUpdateResponseModal, isMeetingHidden, close }) => {
   const [title, setTitle] = useState(meeting.title);
   const [description, setDescription] = useState(meeting.description);
   const [selectedRoom, setSelectedRoom] = useState(meeting.room._id);
   const [host, setHost] = useState(meeting.host);
+  const [participants, setParcipants] = useState(meeting.participants);
   const [isEditing, setIsEditing] = useState(false);
+
+
   const [originalDate, setOriginalDate] = useState(datetime);
   const [inputDate, setInputDate] = useState(meeting.start.split("T")[0]);
-  console.warn("inputDate", inputDate);
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
+
+
   const [meetingStatus, setMeetingStatus] = useState('');
   const [duration, setDuration] = useState({
     hours: 0,
@@ -51,14 +55,24 @@ const ModalCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMeet
 
       /** @note create a new date object (to avoid override the original one) */
       const date = new Date(currentDate);
+      console.log("🚀 ~ file: ModalCard.jsx:60 ~ createDates ~ date:", date)
 
       const inputDate = formatDate(date);
+      console.log("🚀 ~ file: ModalCard.jsx:63 ~ createDates ~ inputDate:", inputDate)
+
+      console.warn("meeting.start", meeting.start);
 
       const startTime = new Date(`${inputDate}T${meeting.start.split("T")[1]}`).toLocaleTimeString("es-ES", timeOptions);
 
+      console.log("🚀 ~ file: ModalCard.jsx:67 ~ createDates ~ startTime:", startTime)
+
       const endTime = new Date(`${inputDate}T${meeting.end.split("T")[1]}`).toLocaleTimeString("es-ES", timeOptions);
 
+      console.log("🚀 ~ file: ModalCard.jsx:71 ~ createDates ~ endTime:", endTime)
+
       const minInputDate = formatDate(datetime);
+
+      console.log("🚀 ~ file: ModalCard.jsx:74 ~ createDates ~ minInputDate:", minInputDate)
 
       /** @note MAX-DATE START */
 
@@ -170,7 +184,7 @@ const ModalCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMeet
   const handleUpdateMeeting = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://localhost:3000/${room}/meeting/${meeting._id}`, {
+      const response = await fetch(`${apiUrlPrefix}/${room}/meeting/${meeting._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -258,6 +272,59 @@ const ModalCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMeet
     }
   }
 
+  const handleHideMeeting = async () => {
+    try {
+      const response = await fetch(`${apiUrlPrefixLocal}/${room}/meeting/${meeting._id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          visible: false
+        })
+      });
+
+      const data = await response.json();
+      console.log("data:", data.meeting);
+
+      if (response.ok) {
+        /* setIsMeetingHidden(true); */
+        setIsButtonDisabled(true);
+
+        /* setMeetings with previous meetings and updated the new one */
+        const updatedMeetings = sortedMeetings.map((meeting) => {
+          if (meeting._id === data.meeting._id) {
+            return data.meeting;
+          } else {
+            return meeting;
+          }
+        });
+
+        setMeetings(updatedMeetings);
+
+        /* const updatedMeetings = sortedMeetings.filter((m) => m._id !== meeting._id);
+
+        setMeetings(updatedMeetings); */
+
+        handleClose();
+
+        /* openUpdateResponseModal();
+
+        setTimeout(() => {
+          closeUpdateResponseModal();
+        }, 3000); */
+
+      } /* else {
+        setIsMeetingHidden(false);
+      } */
+    } catch (error) {
+      console.error(error);
+      /* setIsMeetingHidden(false); */
+    } finally {
+      setIsButtonDisabled(true);
+    }
+  }
+
   const handleRoomChange = (newRoom) => {
     navigate(`/${newRoom}/meetings`, { replace: true });
   }
@@ -279,17 +346,27 @@ const ModalCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMeet
 
     const status = calculateMeetingStatus();
     setMeetingStatus(status);
-  }, [meeting.start, meeting.end]);
+  }, [meeting, meeting.start, meeting.end]);
 
   /** @note if meetings attributes don't change set button to disable */
   useEffect(() => {
     if (meeting.title === title /* && (title === '' || title === undefined) */ && meeting.description === description /* || description === '' */ && meeting.host === host /* || host === '' */ && meeting.room._id === selectedRoom /* && `${inputDate}T${startTime}` === meeting.start && meeting.end === `${inputDate}T${endTime}` && datetime === originalDate */
+
+      /* && new Date(meeting.start).toLocaleTimeString("es-ES", timeOptions) === startTime */
+
+      && (new Date(meeting.end).toLocaleDateString("es-ES", timeOptions)).toString() === (endTime).toString()
     ) {
       setIsButtonDisabled(true);
     } else {
       setIsButtonDisabled(false);
     }
-  }, [meeting.title, meeting.description, meeting.host, meeting.room._id, title, description, host, selectedRoom]);
+  }, [meeting.title, meeting.description, meeting.host, meeting.room._id, meeting.start, meeting.end, title, description, host, selectedRoom, startTime, endTime]);
+
+  /* console.warn("meeting.start, startTime", new Date(meeting.start).toLocaleTimeString("es-ES", timeOptions), `${startTime}`); */
+
+  console.warn("meeting.end, endTime", new Date(meeting.end).toLocaleTimeString("es-ES", timeOptions), `${endTime}`);
+
+  /* console.warn("meeting.start, inputDate", formatDate(meeting.start), `${inputDate}`); */
 
   return (
     <>
@@ -301,9 +378,13 @@ const ModalCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMeet
                 <FontAwesomeIcon className={styles.icon} icon={faCircleInfo} />
                 &nbsp;
                 Detalles
-                <button className={styles.close} onClick={handleClose}>
-                  <FontAwesomeIcon icon={faXmark} />
-                </button>
+                {
+                  (meetingStatus === "Ongoing meeting" || meetingStatus === "Upcoming meeting") && (
+                    <button className={styles.close} onClick={handleClose}>
+                      <FontAwesomeIcon icon={faXmark} />
+                    </button>
+                  )
+                }
               </h4>
               <h1>{title}</h1>
               <h3>{description}</h3>
@@ -329,10 +410,13 @@ const ModalCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMeet
                 )
               }
               <div className={styles.cardContentGroup}>
-                <span className={styles.boldSpan}>Organizador:&nbsp;</span>
+                <span className={styles.boldSpan}>Responsable:&nbsp;</span>
                 <span>{host}</span>
               </div>
-              {/* <span>{members}</span> */}
+              <div className={styles.cardContentGroup}>
+                <span className={styles.boldSpan}>Participantes:&nbsp;</span>
+                <span>{participants}</span>
+              </div>
 
               <div className={styles.cardContentGroup}>
                 <span className={styles.boldSpan}>Horario:&nbsp;</span>
@@ -381,17 +465,44 @@ const ModalCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMeet
               </div>
             </div>
             <footer className={styles.footer}>
-              <button
-                type='button'
-                className={`${styles.button} ${styles.danger}`}
-                onClick={() => setIsConfirmingHiding(true)}>
-                {/* <FontAwesomeIcon icon={faTrash} />
-                &nbsp; */}
-                Eliminar
-              </button>
+
+              {/* {
+                isMeetingHidden && (
+                  <button
+                    type='button'
+                    className={`${styles.button} ${styles.default}`}
+                    onClick={() => handleHideMeeting()}>
+                    Mostrar
+                  </button>
+                )
+              } */}
 
               {
-                new Date(meeting.start).toLocaleString() > new Date(datetime).toLocaleString() && (
+                isMeetingHidden && (
+                  <button
+                    type='button'
+                    className={`${styles.button} ${styles.danger}`}
+                    onClick={() => setIsConfirmingHiding(true)}>
+                    {/* <FontAwesomeIcon icon={faTrash} />
+                &nbsp; */}
+                    Eliminar
+                  </button>
+                )
+              }
+
+              {
+                meetingStatus === "This meeting has been ended" && (
+                  <button
+                    type='button'
+                    className={`${styles.button} ${styles.variant}`}
+                    onClick={() => handleClose()}>
+                    Cerrar
+                  </button>
+                )
+              }
+
+              {
+                (meetingStatus === "Ongoing meeting" || meetingStatus === "Upcoming meeting") && isMeetingHidden && (
                   <button
                     type='button'
                     className={`${styles.button} ${styles.default}`}
@@ -426,10 +537,15 @@ const ModalCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMeet
               <button
                 type='button'
                 className={`${styles.button} ${styles.dangerConfirm}`}
+
+                /* disabled={isButtonDisabled} */
+
                 onClick={() => {
-                  setIsConfirmingHiding(false);
-                  handleClose();
+                  setIsConfirmingHiding(false)
+                  handleHideMeeting()
+                  handleClose()
                 }
+
                 }>Eliminar</button>
             </footer>
           </>
@@ -453,12 +569,12 @@ const ModalCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMeet
               </fieldset>
 
               <fieldset className={styles.fieldset}>
-                <label className={styles.label} htmlFor="host">{/* <FontAwesomeIcon className={styles.icon} icon={faUser} /> */}Host</label>
+                <label className={styles.label} htmlFor="host">{/* <FontAwesomeIcon className={styles.icon} icon={faUser} /> */}Responsable</label>
                 <input type="text" className={styles.input} id="host" name='host' value={host} onChange={(e) => setHost(e.target.value)} placeholder='Obligatorio' required />
               </fieldset>
 
               <fieldset className={styles.fieldset}>
-                <legend className={styles.legend}>Room</legend>
+                <legend className={styles.legend}>Sala</legend>
 
                 <div className={styles.roomsContainer}>
                   {
@@ -474,7 +590,7 @@ const ModalCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMeet
               </fieldset>
 
               <fieldset className={styles.fieldset}>
-                <label className={styles.label} htmlFor="date">{/* <FontAwesomeIcon className={styles.icon} icon={faCalendarDay} /> */}Day</label>
+                <label className={styles.label} htmlFor="date">{/* <FontAwesomeIcon className={styles.icon} icon={faCalendarDay} /> */}D&iacute;a</label>
                 <input type="date" className={styles.date} id="date" value={inputDate} min={minDateValue} max={maxDateValue} onChange={handleDateChange} required />
                 {
                   errorDateMessage && (
@@ -484,17 +600,17 @@ const ModalCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMeet
               </fieldset>
 
               <fieldset className={styles.fieldset}>
-                <label className={styles.label} htmlFor="startTime">Start time</label>
+                <label className={styles.label} htmlFor="startTime">Inicio</label>
                 <input type="time" className={styles.time} id="startTime" value={startTime} min={minTimeValue} max={maxTimeValue} step="1800" onChange={(e) => setStartTime(e.target.value)} required />
               </fieldset>
 
               <fieldset className={styles.fieldset}>
-                <label className={styles.label} htmlFor="endTime">End time</label>
+                <label className={styles.label} htmlFor="endTime">Final</label>
                 <input type="time" className={styles.time} id="endTime" value={endTime} min={minTimeValue} max={maxTimeValue} step="1800" onChange={(e) => setEndTime(e.target.value)} required />
               </fieldset>
 
               <span className={styles.duration}>
-                Duration:&nbsp;
+                Duraci&oacute;n:&nbsp;
                 {
                   duration.hours === 0 ? '' : duration.hours === 1 ? `${duration.hours} hr` : `${duration.hours} hrs`
                 }
@@ -512,7 +628,7 @@ const ModalCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMeet
                 <button
                   type='submit'
                   className={`${styles.button} ${styles.default}`}
-                  disabled={isButtonDisabled}>Actualizar</button>
+                  /* disabled={isButtonDisabled} */>Actualizar</button>
               </footer>
             </form>
           </>

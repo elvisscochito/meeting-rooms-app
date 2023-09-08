@@ -69,6 +69,7 @@ export const checkMeetingOverlap = async (req, res) => {
      */
     const overlappingMeetings = await meetingModel.find({
       room: room._id,
+      visible: true,
       $or: [
         { start: { $gte: start, $lt: end } },
         { end: { $gt: start, $lte: end } },
@@ -105,8 +106,8 @@ export const postMeeting = async (req, res) => {
       end: req.body.end,
       host: req.body.host,
       participants: req.body.participants,
-      room: room._id,
-      key: req.body.key
+      room: room._id/* ,
+      key: req.body.key */
     });
 
     await newMeeting.save();
@@ -118,7 +119,8 @@ export const postMeeting = async (req, res) => {
   }
 }
 
-export const putMeeting = async (req, res) => {
+/** @note with key */
+/* export const putMeeting = async (req, res) => {
   try {
     const room = await roomModel.findOne({ name: req.params.room });
 
@@ -136,8 +138,6 @@ export const putMeeting = async (req, res) => {
       return res.status(401).json({ message: "Invalid key. Updated not allowed." });
     }
 
-    /* const meeting = await meetingModel.findByIdAndUpdate(req.params.id, { */
-    /* title: req.body.title, */
     meeting.title = req.body.title;
     meeting.description = req.body.description;
     meeting.start = req.body.start;
@@ -145,17 +145,42 @@ export const putMeeting = async (req, res) => {
     meeting.host = req.body.host;
     meeting.participants = req.body.participants;
     meeting.room = req.body.room;
-    meeting.key = req.body.key;
-    /* room: {
-      _id: req.body.room._id,
-      name: req.body.room.name
-    }, */
-    /* $inc: { __v: 1 } */
-    /* }, { new: true }); */
 
     const updatedMeeting = await meeting.save();
 
     res.status(200).json({ message: "Meeting updated successfully", meeting: updatedMeeting });
+
+  } catch (error) {
+    res.status(409).json({ message: error.message });
+  }
+} */
+
+export const putMeeting = async (req, res) => {
+  try {
+    const room = await roomModel.findOne({ name: req.params.room });
+
+    if (!room) {
+      return res.status(404).json({ message: "Room not found" });
+    }
+
+    const meeting = await meetingModel.findByIdAndUpdate(req.params.id, {
+      title: req.body.title,
+      description: req.body.description,
+      start: req.body.start,
+      end: req.body.end,
+      host: req.body.host,
+      participants: req.body.participants,
+      room: req.body.room,
+      /* room: {
+        _id: req.body.room._id,
+        name: req.body.room.name
+      }, */
+      /* $inc: { __v: 1 } */
+    }/* , { new: true } */);
+
+    /*  meeting.save(); */
+
+    res.status(200).json({ message: "Meeting updated successfully", meeting });
 
   } catch (error) {
     res.status(409).json({ message: error.message });

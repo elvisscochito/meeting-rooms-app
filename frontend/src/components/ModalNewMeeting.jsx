@@ -1,7 +1,7 @@
 /* import { faCalendarDay, faQuoteLeft, faTextHeight, faUser } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'; */
 import { useEffect, useState } from 'react';
-import apiUrlPrefix from '../config/apiUrlPrefix.js';
+import apiUrlPrefix, { apiUrlPrefixLocal } from '../config/apiUrlPrefix.js';
 import styles from '../styles/Modal.module.css';
 import { dateOptions, timeOptions } from '../utils/utils.js';
 
@@ -37,7 +37,9 @@ const ModalNewMeeting = ({ room, currentDate, setCurrentDate, setMeetings, meeti
     /**
      *  TODO: host debe ser un usuario registrado
      */
-    host: ''
+    host: '',
+    /* put participants as array */
+    participants: ''
   });
 
   const handleChange = (e) => {
@@ -159,7 +161,7 @@ const ModalNewMeeting = ({ room, currentDate, setCurrentDate, setMeetings, meeti
     try {
       const start = new Date(`${inputDate}T${startTime}`).toISOString();
       const end = new Date(`${inputDate}T${endTime}`).toISOString();
-      const response = await fetch(`${apiUrlPrefix}/${room}/meeting`, {
+      const response = await fetch(`${apiUrlPrefixLocal}/${room}/meeting`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -169,7 +171,8 @@ const ModalNewMeeting = ({ room, currentDate, setCurrentDate, setMeetings, meeti
           description: form.description,
           start,
           end,
-          host: form.host
+          host: form.host,
+          participants: form.participants
         })
       })
       const data = await response.json();
@@ -238,7 +241,8 @@ const ModalNewMeeting = ({ room, currentDate, setCurrentDate, setMeetings, meeti
     setForm({
       title: '',
       description: '',
-      host: ''
+      host: '',
+      participants: ''
     });
 
     setInputDate(formatDate(currentDate));
@@ -267,12 +271,17 @@ const ModalNewMeeting = ({ room, currentDate, setCurrentDate, setMeetings, meeti
         </fieldset>
 
         <fieldset className={styles.fieldset}>
-          <label className={styles.label} htmlFor="host">{/* <FontAwesomeIcon className={styles.icon} icon={faUser} /> */}Host</label>
+          <label className={styles.label} htmlFor="host">{/* <FontAwesomeIcon className={styles.icon} icon={faUser} /> */}Responsable</label>
           <input type="text" className={styles.input} id="host" name='host' value={form.host} onChange={handleChange} placeholder='Obligatorio' required />
         </fieldset>
 
         <fieldset className={styles.fieldset}>
-          <label className={styles.label} htmlFor="date">{/* <FontAwesomeIcon className={styles.icon} icon={faCalendarDay} /> */}Day</label>
+          <label className={styles.label} htmlFor="participants">Participantes</label>
+          <input type="text" className={styles.input} id="participants" name='participants' value={form.participants} onChange={handleChange} placeholder='Opcional' />
+        </fieldset>
+
+        <fieldset className={styles.fieldset}>
+          <label className={styles.label} htmlFor="date">{/* <FontAwesomeIcon className={styles.icon} icon={faCalendarDay} /> */}D&iacute;a</label>
           <input type="date" className={styles.date} id="date" value={inputDate} min={minDateValue} max={maxDateValue} onChange={handleDateChange} required />
           {
             errorDateMessage && (
@@ -282,17 +291,17 @@ const ModalNewMeeting = ({ room, currentDate, setCurrentDate, setMeetings, meeti
         </fieldset>
 
         <fieldset className={styles.fieldset}>
-          <label className={styles.label} htmlFor="startTime">Start time</label>
+          <label className={styles.label} htmlFor="startTime">Inicio</label>
           <input type="time" className={styles.time} id="startTime" value={startTime} min={minTimeValue} max={maxTimeValue} step="1800" onChange={(e) => setStartTime(e.target.value)} required />
         </fieldset>
 
         <fieldset className={styles.fieldset}>
-          <label className={styles.label} htmlFor="endTime">End time</label>
+          <label className={styles.label} htmlFor="endTime">Final</label>
           <input type="time" className={styles.time} id="endTime" value={endTime} min={minTimeValue} max={maxTimeValue} step="1800" onChange={(e) => setEndTime(e.target.value)} required />
         </fieldset>
 
         <span className={styles.duration}>
-          Duration:&nbsp;
+          Duraci&oacute;n:&nbsp;
           {
             duration.hours === 0 ? '' : duration.hours === 1 ? `${duration.hours} hr` : `${duration.hours} hrs`
           }
