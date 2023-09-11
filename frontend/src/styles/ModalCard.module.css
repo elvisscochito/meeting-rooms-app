@@ -250,6 +250,19 @@ span.upcoming {
   font-weight: 500;
 }
 
+span.hidden {
+  /* background-color: var(--brand-color);
+  color: #fff;
+  padding: .3rem;
+  border-radius: .3rem;
+  font-size: 0.8rem;
+  font-weight: 500; */
+
+  color: #ff0000;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
 span.boldSpan {
   font-weight: 500;
 }

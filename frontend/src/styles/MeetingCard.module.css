@@ -12,6 +12,20 @@ div.card {
   /* border-left-color: var(--brand-color); */
 }
 
+div.status {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+span.status {
+  font-size: 0.8rem;
+  font-weight: bold;
+  padding: 0 0.25rem;
+  border-radius: 0.25rem;
+}
+
 div.cardHidden {
   display: flex;
   flex-direction: column;
@@ -27,7 +41,7 @@ div.cardHidden {
   position: relative;
 }
 
-div.cardHidden::after {
+/* div.cardHidden::after {
   position: absolute;
   left: 0;
   top: 50%;
@@ -36,7 +50,7 @@ div.cardHidden::after {
   content: "";
   width: 100%;
   display: block;
-}
+} */
 
 header.header {
   width: 100%;
@@ -53,7 +67,7 @@ div.toolbar {
 div.actions {
   height: fit-content;
   font-size: 0.5rem;
-  background-color: var(--brand-color);
+  /* background-color: var(--brand-color); */
   color: white;
   border-radius: 0.25rem;
   padding: 0.15rem;
@@ -94,21 +108,4 @@ footer.cardFooter div.cardFooterInfo {
 /* div.card  */
 footer.cardFooter:has(span, .icon) {
   font-size: 0.8rem;
-}
-
-/* div.card  */
-footer.cardFooter .icon {
-  color: var(--brand-color);
-}
-
-.iconOngoing {
-  color: var(--brand-color);
-}
-
-.iconEnded {
-  color: #e6e6e6;
-}
-
-.iconUpcoming {
-  color: #f3ae2d;
 }

@@ -1,7 +1,7 @@
 /* import { faCalendarDay, faQuoteLeft, faTextHeight, faUser } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'; */
 import { useEffect, useState } from 'react';
-import apiUrlPrefix, { apiUrlPrefixLocal } from '../config/apiUrlPrefix.js';
+import apiUrlPrefix from '../config/apiUrlPrefix.js';
 import styles from '../styles/Modal.module.css';
 import { dateOptions, timeOptions } from '../utils/utils.js';
 
@@ -53,7 +53,6 @@ const ModalNewMeeting = ({ room, currentDate, setCurrentDate, setMeetings, meeti
     const localDate = date.toLocaleDateString("es-ES", dateOptions);
     const [day, month, year] = localDate.split("/");
     const formattedLocalDate = `${year}-${month}-${day}`;
-    console.log("date formatDate", formattedLocalDate);
     /* const year = inputDate.getFullYear();
     const month = (inputDate.getMonth() + 1).toString().padStart(2, '0');
     const day = inputDate.getDate().toString().padStart(2, '0'); */
@@ -110,29 +109,39 @@ const ModalNewMeeting = ({ room, currentDate, setCurrentDate, setMeetings, meeti
 
   const handleDateChange = (e) => {
     const newDate = e.target.value;
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0); // Establecer la hora actual a las 00:00:00.000
 
-    if (validateDate(newDate)) {
+    const selectedDate = new Date(newDate);
+
+    if (selectedDate >= currentDate) {
       setInputDate(newDate);
       setErrorDateMessage('');
     } else {
       setInputDate('');
-      setErrorDateMessage('Selecciona un día de lunes a sábado');
+      setErrorDateMessage('Selecciona una fecha actual o futura');
     }
   }
+
 
   useEffect(() => {
     const handleMeetingSchedule = async () => {
       try {
         const start = new Date(`${inputDate}T${startTime}`).toISOString();
         const end = new Date(`${inputDate}T${endTime}`).toISOString();
-        const response = await fetch(`${apiUrlPrefix}/${room}/meeting?start=${start}&end=${end}`);
+        const currentDateTime = new Date().toISOString();
 
-        const data = await response.json();
+        if (start >= currentDateTime) {
+          const response = await fetch(`${apiUrlPrefix}/${room}/meeting?start=${start}&end=${end}`);
+          const data = await response.json();
 
-        if (data.overlap) {
-          setErrorTimeMessage('Ya hay una reunión programada en ese horario');
+          if (data.overlap) {
+            setErrorTimeMessage('Ya hay una reunión programada en ese horario');
+          } else {
+            setErrorTimeMessage('');
+          }
         } else {
-          setErrorTimeMessage('');
+          setErrorTimeMessage('Selecciona una hora de inicio en el futuro');
         }
       } catch (error) {
         console.error(error);
@@ -141,11 +150,23 @@ const ModalNewMeeting = ({ room, currentDate, setCurrentDate, setMeetings, meeti
     handleMeetingSchedule();
   }, [room, inputDate, startTime, endTime]);
 
+
   const goToDate = (dateParam) => {
     const date = new Date(dateParam);
     date.setDate(new Date(inputDate).getDate() + 1);
     return date;
   }
+
+  /* useEffect(() => {
+    const startDateTime = new Date(`${inputDate}T${startTime}`);
+    const endDateTime = new Date(`${inputDate}T${endTime}`);
+
+    if (endDateTime <= startDateTime) {
+      setErrorTimeMessage('La hora de finalización debe ser posterior a la hora de inicio');
+      return;
+    }
+  }, [inputDate, startTime, endTime]); */
+
 
   const handleCreateMeeting = async (e) => {
     e.preventDefault();
@@ -155,13 +176,21 @@ const ModalNewMeeting = ({ room, currentDate, setCurrentDate, setMeetings, meeti
       return;
     }
 
+    const startDateTime = new Date(`${inputDate}T${startTime}`);
+    const endDateTime = new Date(`${inputDate}T${endTime}`);
+
+    if (endDateTime <= startDateTime) {
+      setErrorTimeMessage('La hora de finalización debe ser posterior a la hora de inicio');
+      return;
+    }
+
     /** @note set to true while process the request */
     setIsButtonDisabled(true);
 
     try {
       const start = new Date(`${inputDate}T${startTime}`).toISOString();
       const end = new Date(`${inputDate}T${endTime}`).toISOString();
-      const response = await fetch(`${apiUrlPrefixLocal}/${room}/meeting`, {
+      const response = await fetch(`${apiUrlPrefix}/${room}/meeting`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -176,7 +205,6 @@ const ModalNewMeeting = ({ room, currentDate, setCurrentDate, setMeetings, meeti
         })
       })
       const data = await response.json();
-      /* console.log(data); */
 
       if (response.status === 201) {
         setIsButtonDisabled(true);
@@ -184,7 +212,6 @@ const ModalNewMeeting = ({ room, currentDate, setCurrentDate, setMeetings, meeti
         addMeeting(data);
         if (inputDate !== formatDate(currentDate)) {
           const moveDate = goToDate(currentDate);
-          console.log("moveDate", moveDate);
           setCurrentDate(moveDate);
         }
 

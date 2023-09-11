@@ -57,8 +57,6 @@ const MeetingCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMe
     // Obtén la fecha actual en formato toDateString()
     const nowDate = new Date().toDateString();
 
-    console.warn(meetingStart, dateTimeDate);
-
     // Comprueba si el día de la reunión es igual al día de dateTimeDate
     if (meetingStart === dateTimeDate) {
       const calculateMeetingStatus = () => {
@@ -92,11 +90,15 @@ const MeetingCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMe
         /* key={meeting._id} */
         style={{
           borderLeftColor:
-            meetingStatus === "ongoing"
-              ? "#00743B"
-              : meetingStatus === "ended"
-                ? "#e6e6e6"
-                : "#f3ae2d",
+            isMeetingHidden ? (
+              meetingStatus === "ongoing"
+                ? "#00743B"
+                : meetingStatus === "ended"
+                  ? "#e6e6e6"
+                  : "#f3ae2d"
+            ) : (
+              "#ff0000"
+            )
           /* opacity: isMeetingHidden === false && 0.3 */
         }}
         onClick={() => openModal()}
@@ -104,7 +106,19 @@ const MeetingCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMe
         <header className={styles.header}>
           <div className={styles.toolbar}>
             <h3>{meeting.title}</h3>
-            <div className={styles.actions}>
+            <div className={styles.actions}
+              style={{
+                backgroundColor:
+                  isMeetingHidden ? (
+                    meetingStatus === "ongoing"
+                      ? "#00743B"
+                      : meetingStatus === "ended"
+                        ? "#c0c0c0"
+                        : "#f3ae2d"
+                  ) : (
+                    "#ff0000"
+                  )
+              }}>
               <FontAwesomeIcon className={styles.icon} icon={faEye} />
               {/* <span className={styles.action}>View</span> */}
               &nbsp;/&nbsp;
@@ -117,9 +131,43 @@ const MeetingCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMe
           </div>
           <h4>{meeting.description}</h4>
         </header>
+        <div className={styles.content}>
+          {
+            isMeetingHidden ? (
+              <div className={styles.status}>
+                {meetingStatus === "ongoing" ? (
+                  <span className={styles.status} style={{ backgroundColor: "#00743B", color: "#ffffff" }}>En curso</span>
+                ) : meetingStatus === "ended" ? (
+                  <span className={styles.status} style={{ backgroundColor: "#e6e6e6" }}>Finalizada</span>
+                ) : (
+                  <span className={styles.status} style={{ backgroundColor: "#f3ae2d", color: "#ffffff" }}>Próximamente</span>
+                )}
+              </div>
+            ) : (
+              <div className={styles.status}>
+                <span className={styles.status} style={{ backgroundColor: "#ff0000", color: "#ffffff" }}>Eliminada</span>
+              </div>
+            )
+          }
+
+        </div>
         <footer className={styles.cardFooter}>
           <div className={styles.cardFooterInfo}>
-            <FontAwesomeIcon className={styles.icon} icon={faClock} />
+            <FontAwesomeIcon
+              className={styles.icon}
+              style={{
+                color:
+                  isMeetingHidden ? (
+                    meetingStatus === "ongoing"
+                      ? "#00743B"
+                      : meetingStatus === "ended"
+                        ? "#c0c0c0"
+                        : "#f3ae2d"
+                  ) : (
+                    "#ff0000"
+                  )
+              }}
+              icon={faClock} />
             &nbsp;
             <span>
               {
@@ -165,7 +213,21 @@ const MeetingCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMe
             </span>
           </div>
           <div className={styles.cardFooterInfo}>
-            <FontAwesomeIcon className={styles.icon} icon={faUser} />
+            <FontAwesomeIcon
+              className={styles.icon}
+              style={{
+                color:
+                  isMeetingHidden ? (
+                    meetingStatus === "ongoing"
+                      ? "#00743B"
+                      : meetingStatus === "ended"
+                        ? "#c0c0c0"
+                        : "#f3ae2d"
+                  ) : (
+                    "#ff0000"
+                  )
+              }}
+              icon={faUser} />
             &nbsp;
             <span>{meeting.host}</span>
           </div>

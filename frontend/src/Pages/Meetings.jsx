@@ -64,7 +64,6 @@ function Meetings() {
       try {
         const response = await fetch(`${apiUrlPrefix}/rooms`);
         const rooms = await response.json();
-        /* console.log(rooms); */
         setRooms(rooms);
       } catch (error) {
         setErrorRooms("Error cargando salas");
@@ -74,7 +73,7 @@ function Meetings() {
 
     const fetchMeetings = async () => {
       try {
-        const response = await fetch(`${apiUrlPrefix}${room}/meetings?date=${currentDate.toISOString()}`);
+        const response = await fetch(`${apiUrlPrefix}/${room}/meetings?date=${currentDate.toISOString()}`);
         const meetings = await response.json();
         /* console.log(meetings); */
         setMeetings(meetings);
@@ -196,8 +195,6 @@ function Meetings() {
   const goToHome = () => {
     navigate('/');
   }
-
-  console.log(meetings);
 
   return (
     <div className={styles.grid}>

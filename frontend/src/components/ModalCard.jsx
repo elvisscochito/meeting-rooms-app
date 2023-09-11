@@ -1,8 +1,7 @@
-import { faCircleDot, faCircleExclamation, faCircleInfo, faClockRotateLeft, faTrash, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faCircleDot, faCircleExclamation, faCircleInfo, faCircleXmark, faClockRotateLeft, faTrash, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import apiUrlPrefix, { apiUrlPrefixLocal } from '../config/apiUrlPrefix.js';
 import styles from '../styles/ModalCard.module.css';
 import { dateOptions, timeOptions } from '../utils/utils.js';
 
@@ -14,12 +13,10 @@ const ModalCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMeet
   const [participants, setParcipants] = useState(meeting.participants);
   const [isEditing, setIsEditing] = useState(false);
 
-
   const [originalDate, setOriginalDate] = useState(datetime);
   const [inputDate, setInputDate] = useState(meeting.start.split("T")[0]);
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
-
 
   const [meetingStatus, setMeetingStatus] = useState('');
   const [duration, setDuration] = useState({
@@ -36,14 +33,10 @@ const ModalCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMeet
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const navigate = useNavigate();
 
-  console.log("datetime: ", datetime);
-  console.log("originalDate: ", originalDate);
-
   const formatDate = (date) => {
     const localDate = date.toLocaleDateString("es-ES", dateOptions);
     const [day, month, year] = localDate.split("/");
     const formattedLocalDate = `${year}-${month}-${day}`;
-    console.log("date formatDate", formattedLocalDate);
     /* const year = inputDate.getFullYear();
     const month = (inputDate.getMonth() + 1).toString().padStart(2, '0');
     const day = inputDate.getDate().toString().padStart(2, '0'); */
@@ -55,24 +48,14 @@ const ModalCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMeet
 
       /** @note create a new date object (to avoid override the original one) */
       const date = new Date(currentDate);
-      console.log("🚀 ~ file: ModalCard.jsx:60 ~ createDates ~ date:", date)
 
       const inputDate = formatDate(date);
-      console.log("🚀 ~ file: ModalCard.jsx:63 ~ createDates ~ inputDate:", inputDate)
-
-      console.warn("meeting.start", meeting.start);
 
       const startTime = new Date(`${inputDate}T${meeting.start.split("T")[1]}`).toLocaleTimeString("es-ES", timeOptions);
 
-      console.log("🚀 ~ file: ModalCard.jsx:67 ~ createDates ~ startTime:", startTime)
-
       const endTime = new Date(`${inputDate}T${meeting.end.split("T")[1]}`).toLocaleTimeString("es-ES", timeOptions);
 
-      console.log("🚀 ~ file: ModalCard.jsx:71 ~ createDates ~ endTime:", endTime)
-
       const minInputDate = formatDate(datetime);
-
-      console.log("🚀 ~ file: ModalCard.jsx:74 ~ createDates ~ minInputDate:", minInputDate)
 
       /** @note MAX-DATE START */
 
@@ -204,7 +187,6 @@ const ModalCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMeet
       });
 
       const data = await response.json();
-      console.log("data:", data.meeting);
 
       if (response.ok) {
 
@@ -247,7 +229,6 @@ const ModalCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMeet
 
         if (inputDate !== formatDate(currentDate)) {
           const moveDate = goToDate(currentDate);
-          console.log("moveDate", moveDate);
           setCurrentDate(moveDate);
         }
 
@@ -274,7 +255,7 @@ const ModalCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMeet
 
   const handleHideMeeting = async () => {
     try {
-      const response = await fetch(`${apiUrlPrefixLocal}/${room}/meeting/${meeting._id}`, {
+      const response = await fetch(`${apiUrlPrefix}/${room}/meeting/${meeting._id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'
@@ -285,7 +266,6 @@ const ModalCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMeet
       });
 
       const data = await response.json();
-      console.log("data:", data.meeting);
 
       if (response.ok) {
         /* setIsMeetingHidden(true); */
@@ -364,9 +344,7 @@ const ModalCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMeet
 
   /* console.warn("meeting.start, startTime", new Date(meeting.start).toLocaleTimeString("es-ES", timeOptions), `${startTime}`); */
 
-  console.warn("meeting.end, endTime", new Date(meeting.end).toLocaleTimeString("es-ES", timeOptions), `${endTime}`);
-
-  /* console.warn("meeting.start, inputDate", formatDate(meeting.start), `${inputDate}`); */
+  /* console.warn("meeting.end, endTime", new Date(meeting.end).toLocaleTimeString("es-ES", timeOptions), `${endTime}`); */
 
   return (
     <>
@@ -375,11 +353,13 @@ const ModalCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMeet
           <>
             <header>
               <h4 className={styles.h4}>
-                <FontAwesomeIcon className={styles.icon} icon={faCircleInfo} />
+                <FontAwesomeIcon
+                  className={styles.icon}
+                  icon={faCircleInfo} />
                 &nbsp;
                 Detalles
                 {
-                  (meetingStatus === "Ongoing meeting" || meetingStatus === "Upcoming meeting") && (
+                  (isMeetingHidden && (meetingStatus === "Ongoing meeting" || meetingStatus === "Upcoming meeting")) && (
                     <button className={styles.close} onClick={handleClose}>
                       <FontAwesomeIcon icon={faXmark} />
                     </button>
@@ -391,21 +371,27 @@ const ModalCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMeet
             </header>
             <div className={styles.content}>
               {
-                /* meetingStatus */
-                meetingStatus === "Ongoing meeting" ? (
-                  <span className={styles.ongoing}>
-                    <FontAwesomeIcon icon={faCircleDot} />
-                    &nbsp;Reunión en curso
-                  </span>
-                ) : meetingStatus === "This meeting has been ended" ? (
-                  <span className={styles.ended}>
-                    <FontAwesomeIcon icon={faClockRotateLeft} />
-                    &nbsp;Reunión finalizada
-                  </span>
+                isMeetingHidden ? (
+                  meetingStatus === "Ongoing meeting" ? (
+                    <span className={styles.ongoing}>
+                      <FontAwesomeIcon icon={faCircleDot} />
+                      &nbsp;Reunión en curso
+                    </span>
+                  ) : meetingStatus === "This meeting has been ended" ? (
+                    <span className={styles.ended}>
+                      <FontAwesomeIcon icon={faClockRotateLeft} />
+                      &nbsp;Reunión finalizada
+                    </span>
+                  ) : (
+                    <span className={styles.upcoming}>
+                      <FontAwesomeIcon icon={faCircleExclamation} />
+                      &nbsp;Reunión próxima
+                    </span>
+                  )
                 ) : (
-                  <span className={styles.upcoming}>
-                    <FontAwesomeIcon icon={faCircleExclamation} />
-                    &nbsp;Reunión próxima
+                  <span className={styles.hidden}>
+                    <FontAwesomeIcon icon={faCircleXmark} />
+                    &nbsp;Reunión eliminada
                   </span>
                 )
               }
@@ -491,7 +477,7 @@ const ModalCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMeet
               }
 
               {
-                meetingStatus === "This meeting has been ended" && (
+                (meetingStatus === "This meeting has been ended" || !isMeetingHidden) && (
                   <button
                     type='button'
                     className={`${styles.button} ${styles.variant}`}
