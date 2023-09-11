@@ -84,6 +84,10 @@ label.roomLabel {
   font-weight: 500;
 }
 
+label.roomLabel:hover {
+  cursor: pointer;
+}
+
 /* turn label text color into green if input radio is checked */
 label.roomLabel:has(input[type="radio"].radio:checked) {
   background-color: var(--brand-color);
@@ -174,6 +178,10 @@ button.button {
   font-weight: 500;
   /*transition: all 0.2s ease-in-out;
   */
+}
+
+button.button:hover {
+  cursor: pointer;
 }
 
 button.default {
@@ -289,4 +297,9 @@ button.closeWarning {
   font-size: 1.5rem;
   font-weight: 500;
   padding: .5rem;
+}
+
+button.close,
+button.closeWarning {
+  cursor: pointer;
 }

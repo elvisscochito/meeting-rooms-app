@@ -2,6 +2,7 @@ import { faCircleDot, faCircleExclamation, faCircleInfo, faCircleXmark, faClockR
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import apiUrlPrefix from '../config/apiUrlPrefix.js';
 import styles from '../styles/ModalCard.module.css';
 import { dateOptions, timeOptions } from '../utils/utils.js';
 
@@ -108,14 +109,19 @@ const ModalCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMeet
       try {
         const start = new Date(`${inputDate}T${startTime}`).toISOString();
         const end = new Date(`${inputDate}T${endTime}`).toISOString();
-        const response = await fetch(`${apiUrlPrefix}/${room}/meeting?start=${start}&end=${end}`);
+        const currentDateTime = new Date().toISOString();
 
-        const data = await response.json();
+        if (start >= currentDateTime) {
+          const response = await fetch(`${apiUrlPrefix}/${room}/meeting?start=${start}&end=${end}`);
+          const data = await response.json();
 
-        if (data.overlap) {
-          setErrorTimeMessage('Ya hay una reunión programada en ese horario');
+          if (data.overlap) {
+            setErrorTimeMessage('Ya hay una reunión programada en ese horario');
+          } else {
+            setErrorTimeMessage('');
+          }
         } else {
-          setErrorTimeMessage('');
+          setErrorTimeMessage('Selecciona una hora de inicio en el futuro');
         }
       } catch (error) {
         console.error(error);
@@ -166,6 +172,15 @@ const ModalCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMeet
 
   const handleUpdateMeeting = async (e) => {
     e.preventDefault();
+
+    const startDateTime = new Date(`${inputDate}T${startTime}`);
+    const endDateTime = new Date(`${inputDate}T${endTime}`);
+
+    if (endDateTime <= startDateTime) {
+      setErrorTimeMessage('La hora de finalización debe ser posterior a la hora de inicio');
+      return;
+    }
+
     try {
       const response = await fetch(`${apiUrlPrefix}/${room}/meeting/${meeting._id}`, {
         method: 'PUT',
