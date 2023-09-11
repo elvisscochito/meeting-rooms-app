@@ -45,6 +45,10 @@ div.cardHidden {
   position: relative;
 }
 
+div.cardHidden:hover {
+  cursor: pointer;
+}
+
 /* div.cardHidden::after {
   position: absolute;
   left: 0;
