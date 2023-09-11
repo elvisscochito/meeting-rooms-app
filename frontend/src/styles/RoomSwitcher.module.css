@@ -18,3 +18,7 @@ button.room {
   border-radius: 1.875rem;
   transition: all 0.2s ease-in-out;
 }
+
+button.room:hover {
+  cursor: pointer;
+}

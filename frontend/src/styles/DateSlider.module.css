@@ -32,6 +32,10 @@ span.arrowButton {
   /* transition: all 0.2s ease-in-out; */
 }
 
+span.arrowButton:hover {
+  cursor: pointer;
+}
+
 /* button.arrowButtonLeft {
   position: absolute;
   top: 100%;

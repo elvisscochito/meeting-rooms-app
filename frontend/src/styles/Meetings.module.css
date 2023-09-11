@@ -62,6 +62,10 @@ button.button {
   /* transition: all 0.2s ease-in-out; */
 }
 
+button.button:hover {
+  cursor: pointer;
+}
+
 button.button:disabled {
   background-color: hsla(151, 100%, 23%, 0.5);
 }

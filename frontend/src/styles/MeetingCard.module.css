@@ -12,6 +12,10 @@ div.card {
   /* border-left-color: var(--brand-color); */
 }
 
+div.card:hover {
+  cursor: pointer;
+}
+
 div.status {
   display: flex;
   flex-direction: row;

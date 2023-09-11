@@ -123,6 +123,10 @@ button.button {
   */
 }
 
+button.button:hover {
+  cursor: pointer;
+}
+
 button.default {
   background-color: var(--brand-color);
   color: #fff;
