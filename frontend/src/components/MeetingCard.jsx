@@ -50,7 +50,7 @@ const MeetingCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMe
     }
   }, [meeting, meeting.start, meeting.end, datetime]); */
 
-  useLayoutEffect(() => {
+  /* useLayoutEffect(() => {
     const meetingStart = new Date(meeting.start).toDateString();
     const dateTimeDate = new Date(datetime).toDateString();
 
@@ -79,7 +79,26 @@ const MeetingCard = ({ datetime, currentDate, setCurrentDate, room, rooms, setMe
       // Si no es el mismo día, establece el estado como "upcoming"
       setMeetingStatus("ended");
     }
-  }, [meeting, meeting.start, meeting.end, datetime]);
+  }, [meeting, meeting.start, meeting.end, datetime]); */
+
+  useLayoutEffect(() => {
+    const calculateMeetingStatus = () => {
+      const meetingStart = new Date(meeting.start);
+      const meetingEnd = new Date(meeting.end);
+      const now = new Date();
+
+      if (now >= meetingStart && now <= meetingEnd) {
+        return "ongoing";
+      } else if (now > meetingEnd) {
+        return "ended";
+      } else {
+        return "upcoming";
+      }
+    };
+
+    const status = calculateMeetingStatus();
+    setMeetingStatus(status);
+  }, [meeting, meeting.start, meeting.end]);
 
   return (
     <>
