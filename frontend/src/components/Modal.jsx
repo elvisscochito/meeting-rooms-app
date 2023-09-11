@@ -1,22 +1,28 @@
+import { faCircleInfo, faCircleXmark } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import styles from '../styles/Modal.module.css';
-const Modal = ({close}) => {
+const Modal = ({ type, title, message, variant, close }) => {
   const handleClose = () => {
     close();
   }
 
-  return(
+  return (
     <>
-    <header>
-      <h1>Nueva reuni&oacute;n</h1>
-    </header>
-    <div className={styles.content}>
-      <label htmlFor="title">T&iacute;tulo</label>
-      <input type="text" id="title" />
-    </div>
-    <footer>
-      <button onClick={() => handleClose()}>Cancelar</button>
-      <button>Crear</button>
-    </footer>
+      <header>
+        {
+          type === 'message' ? (
+            <h2 className={`${styles[type]}`}><FontAwesomeIcon className={styles.icon} icon={faCircleInfo} />&nbsp;{title}</h2>
+          ) : type === 'error' ? (
+            <h2 className={`${styles[type]}`}><FontAwesomeIcon className={styles.icon} icon={faCircleXmark} />&nbsp;{title}</h2>
+          ) : null
+        }
+      </header>
+      <div className={styles.content}>
+        <p className={styles.message}>{message}</p>
+      </div>
+      <footer className={styles.footer}>
+        <button type='button' className={`${styles.button} ${styles[variant]}`} onClick={() => handleClose()}>Cerrar</button>
+      </footer>
     </>
   )
 }

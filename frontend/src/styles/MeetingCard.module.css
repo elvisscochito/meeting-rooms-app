@@ -7,12 +7,88 @@ div.card {
   border-radius: 0.5rem;
   padding: .5rem;
   /* min-width: 18rem; */
-  width: 75%;
+  width: 85%;
   border-left-width: 15px;
   /* border-left-color: var(--brand-color); */
 }
 
-div.card footer.cardFooter {
+div.status {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+span.status {
+  font-size: 0.8rem;
+  font-weight: bold;
+  padding: 0 0.25rem;
+  border-radius: 0.25rem;
+}
+
+div.cardHidden {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  border: 1px solid #e6e6e6;
+  border-radius: 0.5rem;
+  padding: .5rem;
+  /* min-width: 18rem; */
+  width: 85%;
+  border-left-width: 15px;
+  opacity: 0.5;
+  position: relative;
+}
+
+/* div.cardHidden::after {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 3px;
+  background: red;
+  content: "";
+  width: 100%;
+  display: block;
+} */
+
+header.header {
+  width: 100%;
+  height: 100%;
+}
+
+div.toolbar {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+div.actions {
+  height: fit-content;
+  font-size: 0.5rem;
+  /* background-color: var(--brand-color); */
+  color: white;
+  border-radius: 0.25rem;
+  padding: 0.15rem;
+  font-weight: bold;
+  min-width: fit-content;
+}
+
+div.ongoing {
+  background-color: var(--brand-color);
+}
+
+div.ended {
+  background-color: #e6e6e6;
+}
+
+div.upcoming {
+  background-color: #f3ae2d;
+}
+
+/* div.card  */
+footer.cardFooter {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -20,7 +96,8 @@ div.card footer.cardFooter {
   width: 100%;
 }
 
-div.card footer.cardFooter div.cardFooterInfo {
+/* div.card  */
+footer.cardFooter div.cardFooterInfo {
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
@@ -28,10 +105,7 @@ div.card footer.cardFooter div.cardFooterInfo {
   /* gap: 0.5rem; */
 }
 
-div.card footer.cardFooter:has(span, .icon) {
+/* div.card  */
+footer.cardFooter:has(span, .icon) {
   font-size: 0.8rem;
-}
-
-div.card footer.cardFooter .icon {
-  color: var(--brand-color);
 }

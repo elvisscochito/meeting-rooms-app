@@ -8,5 +8,7 @@ router.post("/:room/meeting", meetingController.postMeeting);
 /* router.post("/:room/meeting/overlap", meetingController.checkMeetingOverlap); */
 /* router.get("/:room/meeting?start=:start&end=:end", meetingController.checkMeetingOverlap); */
 router.get("/:room/meeting", meetingController.checkMeetingOverlap);
+router.put("/:room/meeting/:id", meetingController.putMeeting);
+router.patch("/:room/meeting/:id", meetingController.hideMeeting);
 
 export default router;

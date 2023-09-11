@@ -26,11 +26,42 @@ const meetingSchema = new mongoose.Schema({
     trim: true,
     maxlength: 25
   },
+  participants: {
+    type: String,
+    trim: true,
+    maxlength: 25,
+  },
+  /* participants: [
+    {
+      type: String,
+      trim: true,
+      maxlength: 25,
+    }
+  ], */
   room: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Room"
+  },
+  /* participants: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
+    }
+  ], */
+  /* key: {
+    type: String,
+    required: true,
+    trim: true,
+    maxlength: 25
+  }, */
+  visible: {
+    type: Boolean,
+    required: true,
+    default: true
   }
-});
+}/* , {
+  timestamps: true
+} */);
 
 const meetingModel = mongoose.model("Meeting", meetingSchema);
 

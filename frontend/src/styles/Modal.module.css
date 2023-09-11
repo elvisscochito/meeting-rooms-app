@@ -13,6 +13,30 @@ dialog::backdrop {
   background-color: hsla(0, 0%, 85%, 0.2);
 }
 
+h2.message {
+  border-bottom: 1px solid var(--brand-color);
+  padding-bottom: .5rem;
+  margin-bottom: .5rem;
+}
+
+h2.message .icon {
+  color: var(--brand-color);
+}
+
+h2.error {
+  border-bottom: 1px solid #ff0000;
+  padding-bottom: .5rem;
+  margin-bottom: .5rem;
+}
+
+h2.error .icon {
+  color: #ff0000;
+}
+
+p.message {
+  font-size: 1.1rem;
+}
+
 form.form {
   display: flex;
   flex-direction: column;
@@ -112,6 +136,6 @@ button.variant {
 
 button.button:disabled {
   background-color: rgba(217, 217, 217, 0.75);
-  color: #fff;
+  color: #a1a1aa;
   cursor: not-allowed;
 }

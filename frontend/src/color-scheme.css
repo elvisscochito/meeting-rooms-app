@@ -1,3 +1,4 @@
 :root {
   --brand-color: #00743B;
+  accent-color: var(--brand-color);
 }
