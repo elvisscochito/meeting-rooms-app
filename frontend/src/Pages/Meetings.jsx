@@ -21,6 +21,7 @@ function Meetings() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isMeetingCreated, setIsMeetingCreated] = useState(false);
   const [isMeetingUpdated, setIsMeetingUpdated] = useState(false);
+  const [notificationsSent, setNotificationsSent] = useState([]);
   const dialog = useRef(null);
   const subModal = useRef(null);
   const updateResponseModal = useRef(null);
@@ -112,43 +113,51 @@ function Meetings() {
     navigate(`/${room}/meetings`, { replace: true });
   }
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const meetingsUpdated = meetings.map((meeting) => {
+  /*   useEffect(() => {
+      const interval = setInterval(() => {
         const now = new Date();
-        const meetingStart = new Date(meeting.start);
-        const meetingEnd = new Date(meeting.end);
-
-        const meetingIsOngoing = now >= meetingStart && now <= meetingEnd;
-
-        /** @note push Notifications */
-        /* if (isActiveMeeting && !meeting.active) { */
-        // Meeting has just started, send notification
-        /* new Notification("Meeting Started", {
-          body: `${meeting.title} has started.`, */
-        /* vibrate: true */
-        /* });
-      } else if (!isActiveMeeting && meeting.active) { */
-        // Meeting has just ended, send notification
-        /* new Notification("Meeting Ended", {
-          body: `${meeting.title} has ended.`, */
-        /* vibrate: true */
-        /* });
-      } */
-
-        const meetingStatus = meetingIsOngoing ? "ongoing" : now > meetingEnd ? "ended" : "upcoming";
-
-        return {
-          ...meeting,
-          status: meetingStatus
-        };
-      });
-
-      setMeetings(meetingsUpdated);
-    }, 1000)
-
-    return () => clearInterval(interval);
-  }, [meetings]);
+        const meetingsUpdated = meetings.map((meeting) => {
+          const meetingStart = new Date(meeting.start);
+          const meetingEnd = new Date(meeting.end);
+  
+          const meetingIsOngoing = now >= meetingStart && now <= meetingEnd;
+          const meetingHasEnded = now > meetingEnd;
+          const meetingStatus = meetingIsOngoing ? "ongoing" : meetingHasEnded ? "ended" : "upcoming";
+  
+          // Verifica si la notificación ya se ha enviado y si la reunión es del día de hoy
+          if (!notificationsSent.includes(meeting.id) && meetingStart.getDate() === now.getDate()) {
+            if (meetingIsOngoing) {
+              // Envía una notificación cuando comienza la reunión
+              new Notification("Reunión iniciada", {
+                body: `La reunión ${meeting.title} ha iniciado.`,
+                vibrate: true
+              });
+  
+              // Actualiza el estado de notificationsSent utilizando la función de actualización del estado
+              setNotificationsSent((prevNotificationsSent) => [...prevNotificationsSent, meeting.id]);
+            } else if (meetingHasEnded) {
+              // Envía una notificación cuando termina la reunión
+              new Notification("Reunión terminada", {
+                body: `La reunión ${meeting.title} ha terminado.`,
+                vibrate: true
+              });
+  
+              // Actualiza el estado de notificationsSent utilizando la función de actualización del estado
+              setNotificationsSent((prevNotificationsSent) => [...prevNotificationsSent, meeting.id]);
+            }
+          }
+  
+          return {
+            ...meeting,
+            status: meetingStatus,
+          };
+        });
+  
+        setMeetings(meetingsUpdated);
+      }, 1000);
+  
+      return () => clearInterval(interval);
+    }, [meetings, notificationsSent]); */
 
   /* useEffect(() => { */
   /** @note request notifications permission */
