@@ -37,12 +37,22 @@ export const getMeetings = async (req, res) => {
 
     const meetings = await meetingModel.find({
       room: room._id,
-      /* start: { $gte: start, $lt: end } */
+      start: { $gte: start, $lt: end }
     }, { __v: 0 }).populate('room', { __v: 0 });
 
     res.status(200).json(meetings);
   }
   catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+}
+
+export const getAllMeetings = async (req, res) => {
+  try {
+    const meetings = await meetingModel.find({ visible: true }, { __v: 0 }).populate('room', { __v: 0 });
+
+    res.status(200).json(meetings);
+  } catch (error) {
     res.status(404).json({ message: error.message });
   }
 }
