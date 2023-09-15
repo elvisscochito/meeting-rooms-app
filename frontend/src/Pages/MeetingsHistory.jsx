@@ -2,7 +2,7 @@
 import { faCircleDot, faCircleExclamation, faClockRotateLeft } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useEffect, useState } from 'react';
-import { apiUrlPrefixLocal } from '../config/apiUrlPrefix.js';
+import apiUrlPrefix from '../config/apiUrlPrefix.js';
 import styles from '../styles/MeetingsHistory.module.css';
 
 function MeetingsHistory() {
@@ -11,7 +11,7 @@ function MeetingsHistory() {
   useEffect(() => {
     const fetchMeetings = async () => {
       try {
-        const response = await fetch(`${apiUrlPrefixLocal}/meetings`);
+        const response = await fetch(`${apiUrlPrefix}/meetings`);
         const meetings = await response.json();
         setMeetings(meetings);
         console.log(meetings);

@@ -2,7 +2,7 @@ import { faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { apiUrlPrefixLocal } from '../config/apiUrlPrefix.js';
+import apiUrlPrefix from '../config/apiUrlPrefix.js';
 import styles from '../styles/RoomCard.module.css';
 
 const RoomCard = ({ room, dateTime }) => {
@@ -12,7 +12,7 @@ const RoomCard = ({ room, dateTime }) => {
 
     const fetchMeetings = async () => {
       try {
-        const response = await fetch(`${apiUrlPrefixLocal}/${room.name}/meetings?date=${dateTime.toISOString()}`);
+        const response = await fetch(`${apiUrlPrefix}/${room.name}/meetings?date=${dateTime.toISOString()}`);
         const meetings = await response.json();
         setMeetings(meetings);
         console.log(meetings);
